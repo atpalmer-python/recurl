@@ -16,14 +16,14 @@ _Response_New(void)
     return response;
 }
 
-PyObject *
+static PyObject *
 CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
     CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
     return (PyObject *)new;
 }
 
-void
+static void
 CurlEasyAdapter_Dealloc(PyObject *self)
 {
     Py_TYPE(self)->tp_free(self);
