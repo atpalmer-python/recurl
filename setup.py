@@ -6,7 +6,7 @@ setup(
     ext_modules=[
         Extension('requests_curl',
             sources=[
-                'src/module.c',
+                'src/module.c', 'src/easyadapter.c',
             ],
             libraries=['curl'],
         ),
