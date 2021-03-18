@@ -1,4 +1,4 @@
 import requests_curl
 
 
-print(requests_curl.CurlEasyAdapter)
+print(requests_curl.CurlEasyAdapter())
