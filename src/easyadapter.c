@@ -3,8 +3,13 @@
 #include "easyadapter.h"
 
 static PyObject *
-_Response_New(void)
+_Response_New(PyObject *content)
 {
+    /*
+     * requests.Request attributes:
+     * '_content', 'status_code', 'headers', 'url', 'history',
+     *  'encoding', 'reason', 'cookies', 'elapsed', 'request'
+     */
     PyObject *requestsmod = PyImport_ImportModule("requests");
     if(!requestsmod)
         return NULL;
@@ -14,6 +19,10 @@ _Response_New(void)
     PyObject *response = PyObject_CallNoArgs(response_class);
     if(!response)
         return NULL;
+
+    if(PyObject_SetAttrString(response, "_content", content) < 0)
+        return NULL;
+
     return response;
 }
 
@@ -99,10 +108,10 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
 
-    printf("BODY: %s\n", PyBytes_AsString(body));
-    printf("HEADERS: %s\n", PyBytes_AsString(headers));
+    /* TODO: translate headers to dict */
+    printf("HEADERS:\n%s\n", PyBytes_AsString(headers));
 
-    return _Response_New();
+    return _Response_New(body);
 }
 
 PyMethodDef methods[] = {
