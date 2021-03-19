@@ -1,54 +1,7 @@
 #include <Python.h>
 #include <curl/curl.h>
+#include "requests.h"
 #include "easyadapter.h"
-
-typedef struct {
-    PyObject *status_code;
-    PyObject *content;
-    PyObject *url;
-    PyObject *request;
-} ResponseArgs;
-
-static PyObject *
-_Response_New(ResponseArgs *args)
-{
-    /*
-     * requests.Request attributes:
-     * '_content', 'status_code', 'headers', 'url', 'history',
-     * 'encoding', 'reason', 'cookies', 'elapsed', 'request'
-     */
-    PyObject *requestsmod = PyImport_ImportModule("requests");
-    if (!requestsmod)
-        return NULL;
-    PyObject *response_class = PyObject_GetAttrString(requestsmod, "Response");
-    if (!response_class)
-        return NULL;
-    PyObject *response = PyObject_CallNoArgs(response_class);
-    if (!response)
-        return NULL;
-
-    if (PyObject_SetAttrString(response, "_content", args->content) < 0)
-        return NULL;
-    if (PyObject_SetAttrString(response, "status_code", args->status_code) < 0)
-        return NULL;
-    if (PyObject_SetAttrString(response, "url", args->url) < 0)
-        return NULL;
-    if (PyObject_SetAttrString(response, "request", args->request) < 0)
-        return NULL;
-
-    return response;
-}
-
-static const char *
-_PreparedRequest_url(PyObject *request)
-{
-    PyObject *urlobj = PyObject_GetAttrString(request, "url");
-    if (!urlobj)
-        return NULL;
-    if (!PyUnicode_Check(urlobj))
-        return NULL;
-    return PyUnicode_AsUTF8(urlobj);
-}
 
 static PyObject *
 _Curl_get_response_code(CURL *curl)
@@ -69,7 +22,7 @@ _Curl_get_effective_url(CURL *curl)
 static void
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
-    curl_easy_setopt(curl, CURLOPT_URL, _PreparedRequest_url(prepreq));
+    curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 }
 
 static size_t
@@ -137,7 +90,7 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 
     Py_INCREF(request);
 
-    ResponseArgs resp_args = {
+    RequestsMod_ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(curl),
         .content = body,
         .url = _Curl_get_effective_url(curl),
@@ -146,7 +99,7 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 
     curl_easy_cleanup(curl);
 
-    return _Response_New(&resp_args);
+    return RequestsMod_Response_InitNew(&resp_args);
 }
 
 PyMethodDef methods[] = {
