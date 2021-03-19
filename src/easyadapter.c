@@ -2,8 +2,13 @@
 #include <curl/curl.h>
 #include "easyadapter.h"
 
+typedef struct {
+    PyObject *status_code;
+    PyObject *content;
+} ResponseArgs;
+
 static PyObject *
-_Response_New(PyObject *content)
+_Response_New(ResponseArgs *args)
 {
     /*
      * requests.Request attributes:
@@ -20,7 +25,9 @@ _Response_New(PyObject *content)
     if(!response)
         return NULL;
 
-    if(PyObject_SetAttrString(response, "_content", content) < 0)
+    if(PyObject_SetAttrString(response, "_content", args->content) < 0)
+        return NULL;
+    if(PyObject_SetAttrString(response, "status_code", args->status_code) < 0)
         return NULL;
 
     return response;
@@ -35,6 +42,14 @@ _PreparedRequest_url(PyObject *request)
     if(!PyUnicode_Check(urlobj))
         return NULL;
     return PyUnicode_AsUTF8(urlobj);
+}
+
+static PyObject *
+_Curl_get_response_code(CURL *curl)
+{
+    long result;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &result);
+    return PyLong_FromLong(result);
 }
 
 static void
@@ -102,12 +117,18 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     _Curl_apply_PreparedRequest(curl, request);
     _Curl_set_buffers(curl, &headers, &body);
     curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
 
     /* TODO: translate headers to dict */
     printf("HEADERS:\n%s\n", PyBytes_AsString(headers));
 
-    return _Response_New(body);
+    ResponseArgs resp_args = {
+        .status_code = _Curl_get_response_code(curl),
+        .content = body,
+    };
+
+    curl_easy_cleanup(curl);
+
+    return _Response_New(&resp_args);
 }
 
 PyMethodDef methods[] = {

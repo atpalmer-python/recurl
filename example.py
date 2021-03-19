@@ -20,7 +20,7 @@ print('is_permanent_redirect:', response.is_permanent_redirect)
 print('is_redirect:', response.is_redirect)
 print('links:', response.links)
 print('next:', response.next)
-# print('ok:', response.ok)  # TODO: needs status_code set
+print('ok:', response.ok)
 print('raw:', response.raw)
 print('reason:', response.reason)
 print('request:', response.request)
