@@ -58,6 +58,22 @@ CurlEasyAdapter_Dealloc(PyObject *self)
     Py_TYPE(self)->tp_free(self);
 }
 
+static int
+_headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
+{
+    const char *bytes = PyBytes_AsString(bytesobj);
+    const char *eol = strchr(bytes, '\n');
+    if(!eol)
+        return -1;
+    *status_line = PyBytes_FromStringAndSize(bytes, eol - bytes);
+    if(!*status_line)
+        return -1;
+    *rest = PyBytes_FromString(&eol[1]);
+    if(!*rest)
+        return -1;
+    return 0;
+}
+
 static PyObject *
 CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -85,8 +101,14 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     _Curl_set_buffers(curl, &headers, &body);
     curl_easy_perform(curl);
 
+    PyObject *status_line = NULL;
+    PyObject *header_fields = NULL;
+
+    _headers_split(headers, &status_line, &header_fields);
+
     /* TODO: translate headers to dict */
-    printf("HEADERS:\n%s\n", PyBytes_AsString(headers));
+    printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));
+    printf("HEADER_FIELDS:\n%s\n", PyBytes_AsString(header_fields));
 
     Py_INCREF(request);
 
