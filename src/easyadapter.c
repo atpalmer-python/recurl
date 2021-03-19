@@ -15,25 +15,25 @@ _Response_New(ResponseArgs *args)
     /*
      * requests.Request attributes:
      * '_content', 'status_code', 'headers', 'url', 'history',
-     *  'encoding', 'reason', 'cookies', 'elapsed', 'request'
+     * 'encoding', 'reason', 'cookies', 'elapsed', 'request'
      */
     PyObject *requestsmod = PyImport_ImportModule("requests");
-    if(!requestsmod)
+    if (!requestsmod)
         return NULL;
     PyObject *response_class = PyObject_GetAttrString(requestsmod, "Response");
-    if(!response_class)
+    if (!response_class)
         return NULL;
     PyObject *response = PyObject_CallNoArgs(response_class);
-    if(!response)
+    if (!response)
         return NULL;
 
-    if(PyObject_SetAttrString(response, "_content", args->content) < 0)
+    if (PyObject_SetAttrString(response, "_content", args->content) < 0)
         return NULL;
-    if(PyObject_SetAttrString(response, "status_code", args->status_code) < 0)
+    if (PyObject_SetAttrString(response, "status_code", args->status_code) < 0)
         return NULL;
-    if(PyObject_SetAttrString(response, "url", args->url) < 0)
+    if (PyObject_SetAttrString(response, "url", args->url) < 0)
         return NULL;
-    if(PyObject_SetAttrString(response, "request", args->request) < 0)
+    if (PyObject_SetAttrString(response, "request", args->request) < 0)
         return NULL;
 
     return response;
@@ -43,9 +43,9 @@ static const char *
 _PreparedRequest_url(PyObject *request)
 {
     PyObject *urlobj = PyObject_GetAttrString(request, "url");
-    if(!urlobj)
+    if (!urlobj)
         return NULL;
-    if(!PyUnicode_Check(urlobj))
+    if (!PyUnicode_Check(urlobj))
         return NULL;
     return PyUnicode_AsUTF8(urlobj);
 }
@@ -77,7 +77,7 @@ write_callback(void *contents, size_t size, size_t count, void *_buff)
 {
     PyObject **buff = (PyObject **)_buff;
     PyObject *newpart = PyBytes_FromStringAndSize(contents, size * count);
-    if(!*buff)
+    if (!*buff)
         *buff = newpart;
     else
         PyBytes_ConcatAndDel(buff, newpart);
@@ -119,7 +119,7 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *cert = NULL;
     PyObject *proxies = NULL;
 
-    if(PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOOO", kwlist,
+    if (PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOOO", kwlist,
             &request, &stream, &timeout, &verify, &cert, &proxies) < 0) {
         return NULL;
     }

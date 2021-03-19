@@ -16,7 +16,7 @@ PyInit_requests_curl(void)
     if (!module)
         return NULL;
 
-    if(PyType_Ready(&CurlEasyAdapter_Type) < 0)
+    if (PyType_Ready(&CurlEasyAdapter_Type) < 0)
         goto fail;
     Py_INCREF(&CurlEasyAdapter_Type);
     PyModule_AddObject(module, CurlEasyAdapter_Type.tp_name, (PyObject *)&CurlEasyAdapter_Type);
