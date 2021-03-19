@@ -37,14 +37,10 @@ _PreparedRequest_url(PyObject *request)
     return PyUnicode_AsUTF8(urlobj);
 }
 
-static int
+static void
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
-    int r = 0;
-    r = curl_easy_setopt(curl, CURLOPT_URL, _PreparedRequest_url(prepreq));
-    if(r)
-        return r;
-    return r;
+    curl_easy_setopt(curl, CURLOPT_URL, _PreparedRequest_url(prepreq));
 }
 
 static size_t
