@@ -6,6 +6,7 @@ typedef struct {
     PyObject *status_code;
     PyObject *content;
     PyObject *url;
+    PyObject *request;
 } ResponseArgs;
 
 static PyObject *
@@ -31,6 +32,8 @@ _Response_New(ResponseArgs *args)
     if(PyObject_SetAttrString(response, "status_code", args->status_code) < 0)
         return NULL;
     if(PyObject_SetAttrString(response, "url", args->url) < 0)
+        return NULL;
+    if(PyObject_SetAttrString(response, "request", args->request) < 0)
         return NULL;
 
     return response;
@@ -132,10 +135,13 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     /* TODO: translate headers to dict */
     printf("HEADERS:\n%s\n", PyBytes_AsString(headers));
 
+    Py_INCREF(request);
+
     ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(curl),
         .content = body,
         .url = _Curl_get_effective_url(curl),
+        .request = request,
     };
 
     curl_easy_cleanup(curl);
