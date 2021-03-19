@@ -38,6 +38,26 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
     return r;
 }
 
+static size_t
+write_callback(void *contents, size_t size, size_t count, void *_buff)
+{
+    PyObject **buff = (PyObject **)_buff;
+    PyObject *newpart = PyBytes_FromStringAndSize(contents, size * count);
+    if(!*buff)
+        *buff = newpart;
+    else
+        PyBytes_ConcatAndDel(buff, newpart);
+    return size * count;
+}
+
+static void
+_Curl_set_buffers(CURL *curl, PyObject **headers, PyObject **body)
+{
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, body);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, headers);
+}
+
 static PyObject *
 CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
@@ -70,10 +90,17 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
 
+    PyObject *headers = NULL;
+    PyObject *body = NULL;
+
     CURL *curl = curl_easy_init();
     _Curl_apply_PreparedRequest(curl, request);
+    _Curl_set_buffers(curl, &headers, &body);
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
+
+    printf("BODY: %s\n", PyBytes_AsString(body));
+    printf("HEADERS: %s\n", PyBytes_AsString(headers));
 
     return _Response_New();
 }
