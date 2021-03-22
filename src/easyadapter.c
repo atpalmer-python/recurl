@@ -83,6 +83,7 @@ _header_fields_to_dict(PyObject *fieldbytes)
 
     const char *start = fieldstring;
     for(;;) {
+        /* TODO: handle continuations (lines starting with whitespace) */
         const char *sep = strchr(start, ':');
         if(!sep)
             break;
@@ -149,15 +150,12 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *header_fields = NULL;
 
     _headers_split(headers, &status_line, &header_fields);
-
-    printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));
-    printf("HEADER_FIELDS:\n%s\n", PyBytes_AsString(header_fields));
+    printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));  /* TODO: parse reason phrase */
 
     PyObject *headerdict = _header_fields_to_dict(header_fields);
 
-    printf("HEADER_FIELDS DICT (size: %d):\n", PyDict_Size(headerdict));
-    printf("%s\n", PyUnicode_AsUTF8(PyObject_Repr(headerdict)));
-    printf("***END HEADER_FIELDS DICT***\n");
+    Py_DECREF(header_fields);
+    Py_DECREF(status_line);
 
     Py_INCREF(request);
 
@@ -166,6 +164,7 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
         .content = body,
         .url = _Curl_get_effective_url(curl),
         .request = request,
+        .headers = headerdict,
     };
 
     curl_easy_cleanup(curl);

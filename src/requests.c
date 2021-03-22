@@ -27,6 +27,8 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
         return NULL;
     if (PyObject_SetAttrString(response, "request", args->request) < 0)
         return NULL;
+    if (PyObject_SetAttrString(response, "headers", args->headers) < 0)     /* TODO: ensure case-insensitive */
+        return NULL;
 
     return response;
 }
