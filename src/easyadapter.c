@@ -75,6 +75,38 @@ _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
 }
 
 static PyObject *
+_header_fields_to_dict(PyObject *fieldbytes)
+{
+    PyObject *headerdict = PyDict_New();
+
+    const char *fieldstring = PyBytes_AsString(fieldbytes);
+
+    const char *start = fieldstring;
+    for(;;) {
+        const char *sep = strchr(start, ':');
+        if(!sep)
+            break;
+        const char *end = strstr(sep, "\r\n");
+        if(!end)
+            break;
+
+        const char *vstart = &sep[1];
+        while(*vstart == ' ')
+            ++vstart;
+        Py_ssize_t vlen = end - vstart;
+        PyObject *value = PyUnicode_FromStringAndSize(vstart, vlen);
+
+        Py_ssize_t klen = sep - start;
+        PyObject *key = PyUnicode_FromStringAndSize(start, klen);
+        PyDict_SetItem(headerdict, key, value);
+
+        start = &end[2];
+    }
+
+    return headerdict;
+}
+
+static PyObject *
 CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     char *kwlist[] = {
@@ -106,9 +138,15 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 
     _headers_split(headers, &status_line, &header_fields);
 
-    /* TODO: translate headers to dict */
     printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));
     printf("HEADER_FIELDS:\n%s\n", PyBytes_AsString(header_fields));
+
+    /* TODO: handle multiple "Set-Cookie" headers */
+    PyObject *headerdict = _header_fields_to_dict(header_fields);
+
+    printf("HEADER_FIELDS DICT (size: %d):\n", PyDict_Size(headerdict));
+    printf("%s\n", PyUnicode_AsUTF8(PyObject_Repr(headerdict)));
+    printf("***END HEADER_FIELDS DICT***\n");
 
     Py_INCREF(request);
 
