@@ -100,8 +100,8 @@ _header_fields_to_dict(PyObject *fieldbytes)
         Py_ssize_t klen = sep - start;
         PyObject *key = PyUnicode_FromStringAndSize(start, klen);
 
-        PyObject *existing_val = PyDict_GetItem(headerdict, key);
-        if(existing_val) {
+        if(PyMapping_HasKey(headerdict, key)) {
+            PyObject *existing_val = PyObject_GetItem(headerdict, key);
             PyObject *comma = PyUnicode_FromString(", ");
             PyObject *tmp = PyUnicode_Concat(existing_val, comma);
             Py_DECREF(existing_val);
@@ -112,7 +112,7 @@ _header_fields_to_dict(PyObject *fieldbytes)
             value = newvalue;
         }
 
-        PyDict_SetItem(headerdict, key, value);
+        PyObject_SetItem(headerdict, key, value);
         start = &end[2];
     }
 
