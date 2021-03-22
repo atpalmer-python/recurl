@@ -63,13 +63,13 @@ _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
 {
     const char *bytes = PyBytes_AsString(bytesobj);
     const char *eol = strchr(bytes, '\n');
-    if(!eol)
+    if (!eol)
         return -1;
     *status_line = PyBytes_FromStringAndSize(bytes, eol - bytes);
-    if(!*status_line)
+    if (!*status_line)
         return -1;
     *rest = PyBytes_FromString(&eol[1]);
-    if(!*rest)
+    if (!*rest)
         return -1;
     return 0;
 }
@@ -82,17 +82,17 @@ _header_fields_to_dict(PyObject *fieldbytes)
     const char *fieldstring = PyBytes_AsString(fieldbytes);
 
     const char *start = fieldstring;
-    for(;;) {
+    for (;;) {
         /* TODO: handle continuations (lines starting with whitespace) */
         const char *sep = strchr(start, ':');
-        if(!sep)
+        if (!sep)
             break;
         const char *end = strstr(sep, "\r\n");
-        if(!end)
+        if (!end)
             break;
 
         const char *vstart = &sep[1];
-        while(*vstart == ' ')
+        while (*vstart == ' ')
             ++vstart;
         Py_ssize_t vlen = end - vstart;
         PyObject *value = PyUnicode_FromStringAndSize(vstart, vlen);
@@ -100,7 +100,7 @@ _header_fields_to_dict(PyObject *fieldbytes)
         Py_ssize_t klen = sep - start;
         PyObject *key = PyUnicode_FromStringAndSize(start, klen);
 
-        if(PyMapping_HasKey(headerdict, key)) {
+        if (PyMapping_HasKey(headerdict, key)) {
             PyObject *existing_val = PyObject_GetItem(headerdict, key);
             PyObject *comma = PyUnicode_FromString(", ");
             PyObject *tmp = PyUnicode_Concat(existing_val, comma);
