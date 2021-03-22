@@ -62,7 +62,7 @@ static int
 _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
 {
     const char *bytes = PyBytes_AsString(bytesobj);
-    const char *eol = strchr(bytes, '\n');
+    const char *eol = strstr(bytes, "\r\n");
     if (!eol)
         return -1;
     *status_line = PyBytes_FromStringAndSize(bytes, eol - bytes);
