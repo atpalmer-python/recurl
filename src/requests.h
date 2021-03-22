@@ -12,6 +12,7 @@ typedef struct {
 } RequestsMod_ResponseArgs;
 
 PyObject *RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args);
+PyObject *RequestsMod_CaseInsensitiveDict_New(void);
 const char *RequestsMod_PreparedRequest_url(PyObject *request);
 
 #endif

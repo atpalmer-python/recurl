@@ -27,10 +27,25 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
         return NULL;
     if (PyObject_SetAttrString(response, "request", args->request) < 0)
         return NULL;
-    if (PyObject_SetAttrString(response, "headers", args->headers) < 0)     /* TODO: ensure case-insensitive */
+    if (PyObject_SetAttrString(response, "headers", args->headers) < 0)
         return NULL;
 
     return response;
+}
+
+PyObject *
+RequestsMod_CaseInsensitiveDict_New(void)
+{
+    PyObject *mod = PyImport_ImportModule("requests.structures");
+    if (!mod)
+        return NULL;
+    PyObject *classobj = PyObject_GetAttrString(mod, "CaseInsensitiveDict");
+    if (!classobj)
+        return NULL;
+    PyObject *new = PyObject_CallNoArgs(classobj);
+    if (!new)
+        return NULL;
+    return new;
 }
 
 const char *

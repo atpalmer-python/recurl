@@ -77,7 +77,7 @@ _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
 static PyObject *
 _header_fields_to_dict(PyObject *fieldbytes)
 {
-    PyObject *headerdict = PyDict_New();
+    PyObject *headerdict = RequestsMod_CaseInsensitiveDict_New();
 
     const char *fieldstring = PyBytes_AsString(fieldbytes);
 
