@@ -119,6 +119,46 @@ _header_fields_to_dict(PyObject *fieldbytes)
     return headerdict;
 }
 
+const char *
+_skip_linearwhitespace(const char *p)
+{
+    while (*p == ' ' || *p == '\t')
+        ++p;
+    return p;
+}
+
+PyObject *
+_Py_None_New(void)
+{
+    Py_RETURN_NONE;
+}
+
+PyObject *
+_or_Py_None(PyObject *o)
+{
+    return o ? o : _Py_None_New();
+}
+
+PyObject *
+_status_line_reason(PyObject *statusbytes)
+{
+    const char *bytes = PyBytes_AsString(statusbytes);
+
+    const char *protostart = bytes;
+    const char *protoend = strchr(protostart, ' ');
+    if (!protoend)
+        return NULL;
+
+    const char *codestart = _skip_linearwhitespace(&protoend[1]);
+    const char *codeend = strchr(codestart, ' ');
+    if (!codeend)
+        return NULL;
+
+    const char *reason = _skip_linearwhitespace(&codeend[1]);
+
+    return *reason ? PyBytes_FromString(reason) : _Py_None_New();
+}
+
 static PyObject *
 CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -146,11 +186,16 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     _Curl_set_buffers(curl, &headers, &body);
     curl_easy_perform(curl);
 
+    printf("HEADERS: %s\n", PyBytes_AsString(headers));
+
     PyObject *status_line = NULL;
     PyObject *header_fields = NULL;
 
     _headers_split(headers, &status_line, &header_fields);
     printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));  /* TODO: parse reason phrase */
+
+    PyObject *reason = _status_line_reason(status_line);
+    printf("REASON: %s\n", PyUnicode_AsUTF8(PyObject_Repr(reason)));
 
     PyObject *headerdict = _header_fields_to_dict(header_fields);
 
@@ -161,7 +206,7 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
 
     RequestsMod_ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(curl),
-        .content = body,
+        .content = _or_Py_None(body),
         .url = _Curl_get_effective_url(curl),
         .request = request,
         .headers = headerdict,
