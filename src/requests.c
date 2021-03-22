@@ -2,6 +2,30 @@
 #include "requests.h"
 
 PyObject *
+_import_obj(const char *modname, const char *objname)
+{
+    PyObject *mod = PyImport_ImportModule(modname);
+    if (!mod)
+        return NULL;
+    PyObject *obj = PyObject_GetAttrString(mod, objname);
+    if (!obj)
+        return NULL;
+    return obj;
+}
+
+PyObject *
+_import_default_instance(const char *modname, const char *typename)
+{
+    PyObject *typeobj = _import_obj(modname, typename);
+    if (!typeobj)
+        return NULL;
+    PyObject *new = PyObject_CallNoArgs(typeobj);
+    if (!new)
+        return NULL;
+    return new;
+}
+
+PyObject *
 RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
 {
     /*
@@ -9,13 +33,7 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
      * '_content', 'status_code', 'headers', 'url', 'history',
      * 'encoding', 'reason', 'cookies', 'elapsed', 'request'
      */
-    PyObject *requestsmod = PyImport_ImportModule("requests");
-    if (!requestsmod)
-        return NULL;
-    PyObject *response_class = PyObject_GetAttrString(requestsmod, "Response");
-    if (!response_class)
-        return NULL;
-    PyObject *response = PyObject_CallNoArgs(response_class);
+    PyObject *response = _import_default_instance("requests", "Response");
     if (!response)
         return NULL;
 
@@ -36,16 +54,7 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
 PyObject *
 RequestsMod_CaseInsensitiveDict_New(void)
 {
-    PyObject *mod = PyImport_ImportModule("requests.structures");
-    if (!mod)
-        return NULL;
-    PyObject *classobj = PyObject_GetAttrString(mod, "CaseInsensitiveDict");
-    if (!classobj)
-        return NULL;
-    PyObject *new = PyObject_CallNoArgs(classobj);
-    if (!new)
-        return NULL;
-    return new;
+    return _import_default_instance("requests.structures", "CaseInsensitiveDict");
 }
 
 const char *
