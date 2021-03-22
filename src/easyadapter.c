@@ -98,8 +98,20 @@ _header_fields_to_dict(PyObject *fieldbytes)
 
         Py_ssize_t klen = sep - start;
         PyObject *key = PyUnicode_FromStringAndSize(start, klen);
-        PyDict_SetItem(headerdict, key, value);
 
+        PyObject *existing_val = PyDict_GetItem(headerdict, key);
+        if(existing_val) {
+            PyObject *comma = PyUnicode_FromString(", ");
+            PyObject *tmp = PyUnicode_Concat(existing_val, comma);
+            Py_DECREF(existing_val);
+            Py_DECREF(comma);
+            PyObject *newvalue = PyUnicode_Concat(tmp, value);
+            Py_DECREF(tmp);
+            Py_DECREF(value);
+            value = newvalue;
+        }
+
+        PyDict_SetItem(headerdict, key, value);
         start = &end[2];
     }
 
@@ -141,7 +153,6 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));
     printf("HEADER_FIELDS:\n%s\n", PyBytes_AsString(header_fields));
 
-    /* TODO: handle multiple "Set-Cookie" headers */
     PyObject *headerdict = _header_fields_to_dict(header_fields);
 
     printf("HEADER_FIELDS DICT (size: %d):\n", PyDict_Size(headerdict));
