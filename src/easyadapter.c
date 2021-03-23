@@ -33,6 +33,11 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
      */
 
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
+
+    const char *method = RequestsMod_PreparedRequest_method(prepreq);
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, strcmp(method, "GET") == 0);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, strcmp(method, "HEAD") == 0);
 }
 
 static int
