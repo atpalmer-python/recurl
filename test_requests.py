@@ -5,6 +5,7 @@ import requests_curl
 def test_google():
     import datetime
 
+    # TODO: simplify this setup code
     adapter = requests_curl.CurlEasyAdapter(http_version='1.1')
     session = requests.Session()
     session.mount('https://', adapter)
@@ -30,4 +31,16 @@ def test_google():
     assert response.status_code == 200
     assert response.text == response.content.decode('latin-1')
     assert response.url == 'https://www.google.com/'
+
+
+def test_get():
+    adapter = requests_curl.CurlEasyAdapter()
+    session = requests.Session()
+    session.mount('https://', adapter)
+
+    response = session.get('https://httpbin.org/get', params={'val1': 4, 'val2': 2})
+
+    data = response.json()
+    assert data['args'] == {'val1': '4', 'val2': '2'}
+    assert data['url'] == 'https://httpbin.org/get?val1=4&val2=2'
 
