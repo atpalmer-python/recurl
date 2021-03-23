@@ -49,12 +49,15 @@ static PyObject *
 CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
     CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
+    new->curl = curl_easy_init();
     return (PyObject *)new;
 }
 
 static void
-CurlEasyAdapter_Dealloc(PyObject *self)
+CurlEasyAdapter_Dealloc(PyObject *_self)
 {
+    CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
+    curl_easy_cleanup(self->curl);
     Py_TYPE(self)->tp_free(self);
 }
 
@@ -160,8 +163,10 @@ _status_line_reason(PyObject *statusbytes)
 }
 
 static PyObject *
-CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
+CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
 {
+    CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
+
     char *kwlist[] = {
         "request", "stream", "timeout", "verify", "cert", "proxies", NULL
     };
@@ -181,10 +186,9 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *headers = NULL;
     PyObject *body = NULL;
 
-    CURL *curl = curl_easy_init();
-    _Curl_apply_PreparedRequest(curl, request);
-    _Curl_set_buffers(curl, &headers, &body);
-    curl_easy_perform(curl);
+    _Curl_apply_PreparedRequest(self->curl, request);
+    _Curl_set_buffers(self->curl, &headers, &body);
+    curl_easy_perform(self->curl);
 
     PyObject *status_line = NULL;
     PyObject *header_fields = NULL;
@@ -199,15 +203,13 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     Py_INCREF(request);
 
     RequestsMod_ResponseArgs resp_args = {
-        .status_code = _Curl_get_response_code(curl),
+        .status_code = _Curl_get_response_code(self->curl),
         .content = _or_Py_None(body),
-        .url = _Curl_get_effective_url(curl),
+        .url = _Curl_get_effective_url(self->curl),
         .request = request,
         .headers = headerdict,
         .reason = reason,
     };
-
-    curl_easy_cleanup(curl);
 
     return RequestsMod_Response_InitNew(&resp_args);
 }
