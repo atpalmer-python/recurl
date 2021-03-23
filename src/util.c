@@ -27,3 +27,16 @@ util_dict_pick_off(PyObject *dict, const char *keys[])
     return result;
 }
 
+void
+util_pick_off_keywords(PyObject *kwdict, const char *kwlist[], ...)
+{
+    va_list vargs;
+    va_start(vargs, kwlist);
+    for (const char **kwp = kwlist; *kwp; ++kwp) {
+        PyObject **target = va_arg(vargs, PyObject **);
+        PyObject *val = util_dict_pop(kwdict, *kwp);
+        if (val)
+            *target = val;
+    }
+    va_end(vargs);
+}
