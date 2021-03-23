@@ -12,10 +12,13 @@ _CurlEasySession(PyObject *self, PyObject *args, PyObject *kwargs)
     PyObject *http = PyUnicode_FromString("http://");
     PyObject *https = PyUnicode_FromString("https://");
 
+    PyObject *mresult = NULL;
     PyObject *httpsargs[] = {result, https, adapter};
-    PyObject_VectorcallMethod(mount, httpsargs, 3, NULL);
+    mresult = PyObject_VectorcallMethod(mount, httpsargs, 3, NULL);
+    Py_DECREF(mresult);
     PyObject *httpargs[] = {result, http, adapter};
-    PyObject_VectorcallMethod(mount, httpargs, 3, NULL);
+    mresult = PyObject_VectorcallMethod(mount, httpargs, 3, NULL);
+    Py_DECREF(mresult);
 
     Py_DECREF(mount);
     Py_DECREF(http);
