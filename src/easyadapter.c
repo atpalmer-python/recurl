@@ -20,6 +20,14 @@ _Curl_get_effective_url(CURL *curl)
 }
 
 static void
+_Curl_set_method(CURL *curl, const char *method)
+{
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, strcmp(method, "GET") == 0);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, strcmp(method, "HEAD") == 0);
+}
+
+static void
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
     /*
@@ -34,10 +42,7 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 
-    const char *method = RequestsMod_PreparedRequest_method(prepreq);
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, strcmp(method, "GET") == 0);
-    curl_easy_setopt(curl, CURLOPT_NOBODY, strcmp(method, "HEAD") == 0);
+    _Curl_set_method(curl, RequestsMod_PreparedRequest_method(prepreq));
 }
 
 static int
