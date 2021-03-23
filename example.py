@@ -14,7 +14,7 @@ print('content[0:255]:', response.content[0:255])
 print('cookies:', response.cookies)
 print('elapsed:', response.elapsed)
 print('encoding:', response.encoding)
-print('headers:', response.headers)  # TODO: set as dict
+print('headers:', response.headers)
 print('history:', response.history)
 print('is_permanent_redirect:', response.is_permanent_redirect)
 print('is_redirect:', response.is_redirect)
