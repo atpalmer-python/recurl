@@ -59,6 +59,12 @@ RequestsMod_CaseInsensitiveDict_New(void)
     return _import_default_instance("requests.structures", "CaseInsensitiveDict");
 }
 
+PyObject *
+RequestsMod_Session_New(void)
+{
+    return _import_default_instance("requests", "Session");
+}
+
 const char *
 RequestsMod_PreparedRequest_url(PyObject *request)
 {
