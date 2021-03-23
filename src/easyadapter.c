@@ -68,7 +68,7 @@ _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
     *status_line = PyBytes_FromStringAndSize(bytes, eol - bytes);
     if (!*status_line)
         return -1;
-    *rest = PyBytes_FromString(&eol[1]);
+    *rest = PyBytes_FromString(&eol[2]);
     if (!*rest)
         return -1;
     return 0;
