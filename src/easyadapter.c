@@ -45,22 +45,6 @@ _Curl_set_buffers(CURL *curl, PyObject **headers, PyObject **body)
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, headers);
 }
 
-static PyObject *
-CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
-{
-    CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
-    new->curl = curl_easy_init();
-    return (PyObject *)new;
-}
-
-static void
-CurlEasyAdapter_Dealloc(PyObject *_self)
-{
-    CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
-    curl_easy_cleanup(self->curl);
-    Py_TYPE(self)->tp_free(self);
-}
-
 static int
 _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
 {
@@ -218,6 +202,22 @@ PyMethodDef methods[] = {
     {"send", (PyCFunction)CurlEasyAdapter_send, METH_VARARGS | METH_KEYWORDS, ""},
     {0},
 };
+
+static PyObject *
+CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
+{
+    CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
+    new->curl = curl_easy_init();
+    return (PyObject *)new;
+}
+
+static void
+CurlEasyAdapter_Dealloc(PyObject *_self)
+{
+    CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
+    curl_easy_cleanup(self->curl);
+    Py_TYPE(self)->tp_free(self);
+}
 
 PyTypeObject CurlEasyAdapter_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
