@@ -2,7 +2,7 @@ import requests
 import requests_curl
 
 
-adapter = requests_curl.CurlEasyAdapter()
+adapter = requests_curl.CurlEasyAdapter(http_version='1.1')
 session = requests.Session()
 
 session.mount('https://', adapter)

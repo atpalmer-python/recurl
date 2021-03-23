@@ -25,6 +25,40 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 }
 
+static int
+_Curl_set_http_version(CURL *curl, PyObject *http_version)
+{
+    if (!http_version)
+        return 0;
+    if (http_version == Py_None)
+        return 0;
+    if (!PyUnicode_Check(http_version))
+        return -1;
+
+    const char *verstr = PyUnicode_AsUTF8(http_version);
+
+    long verval = CURL_HTTP_VERSION_NONE;
+
+    if (strcmp("1.0", verstr) == 0) {
+        verval = CURL_HTTP_VERSION_1_0;
+    } else if (strcmp("1.1", verstr) == 0) {
+        verval = CURL_HTTP_VERSION_1_0;
+    } else if (strcmp("2", verstr) == 0) {
+        verval = CURL_HTTP_VERSION_2_0;
+#ifdef CURL_HTTP_VERSION_3
+    } else if (strcmp("3", verstr) == 0) {
+        verval = CURL_HTTP_VERSION_3;
+#endif
+    } else {
+        PyErr_Format(PyExc_ValueError, "Unsupported version: %s\n", verstr);
+        return -1;
+    }
+
+    curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, verval);
+
+    return 0;
+}
+
 static size_t
 write_callback(void *contents, size_t size, size_t count, void *_buff)
 {
@@ -186,6 +220,8 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
 
     Py_INCREF(request);
 
+    /* Add negotiated HTTP version to Response object? */
+
     RequestsMod_ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(self->curl),
         .content = _or_Py_None(body),
@@ -206,8 +242,22 @@ PyMethodDef methods[] = {
 static PyObject *
 CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
+    char *kwlist[] = {
+        "http_version", NULL
+    };
+
+    PyObject *http_version = NULL;
+
+    if (PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist,
+            &http_version) < 0) {
+        return NULL;
+    }
+
     CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
     new->curl = curl_easy_init();
+
+    _Curl_set_http_version(new->curl, http_version);
+
     return (PyObject *)new;
 }
 
