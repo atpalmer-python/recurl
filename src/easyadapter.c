@@ -266,7 +266,7 @@ PyMethodDef methods[] = {
 };
 
 static PyObject *
-CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
+_CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
     char *kwlist[] = {
         "http_version", NULL
@@ -287,6 +287,12 @@ CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
     return (PyObject *)new;
 }
 
+PyObject *
+CurlEasyAdapter_New(PyObject *args, PyObject *kwargs)
+{
+    return _CurlEasyAdapter_New(&CurlEasyAdapter_Type, args, kwargs);
+}
+
 static void
 CurlEasyAdapter_Dealloc(PyObject *_self)
 {
@@ -301,7 +307,7 @@ PyTypeObject CurlEasyAdapter_Type = {
     .tp_doc = "",
     .tp_basicsize = sizeof(CurlEasyAdapter),
     .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_new = CurlEasyAdapter_New,
+    .tp_new = _CurlEasyAdapter_New,
     .tp_dealloc = CurlEasyAdapter_Dealloc,
     .tp_members = NULL,
     .tp_methods = methods,
