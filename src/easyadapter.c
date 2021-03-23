@@ -210,6 +210,7 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
         .url = _Curl_get_effective_url(curl),
         .request = request,
         .headers = headerdict,
+        .reason = reason,
     };
 
     curl_easy_cleanup(curl);

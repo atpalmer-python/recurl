@@ -9,6 +9,7 @@ typedef struct {
     PyObject *url;
     PyObject *request;
     PyObject *headers;
+    PyObject *reason;
 } RequestsMod_ResponseArgs;
 
 PyObject *RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args);

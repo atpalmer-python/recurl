@@ -47,6 +47,8 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
         return NULL;
     if (PyObject_SetAttrString(response, "headers", args->headers) < 0)
         return NULL;
+    if (PyObject_SetAttrString(response, "reason", args->reason) < 0)
+        return NULL;
 
     return response;
 }
