@@ -156,7 +156,7 @@ _status_line_reason(PyObject *statusbytes)
 
     const char *reason = _skip_linearwhitespace(&codeend[1]);
 
-    return *reason ? PyBytes_FromString(reason) : _Py_None_New();
+    return *reason ? PyUnicode_FromString(reason) : _Py_None_New();
 }
 
 static PyObject *
