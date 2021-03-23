@@ -5,12 +5,8 @@ import requests_curl
 def test_google():
     import datetime
 
-    # TODO: simplify this setup code
-    adapter = requests_curl.CurlEasyAdapter(http_version='1.1')
-    session = requests.Session()
-    session.mount('https://', adapter)
-
-    response = session.get('https://www.google.com/')
+    session = requests_curl.CurlEasySession(http_version='1.1')
+    response = session.get('https://www.google.com/')  # TODO: implement requests_curl.get
 
     assert response.apparent_encoding == 'ISO-8859-1'
     # assert response.cookies == None  # TODO
@@ -34,9 +30,7 @@ def test_google():
 
 
 def test_get():
-    adapter = requests_curl.CurlEasyAdapter()
-    session = requests.Session()
-    session.mount('https://', adapter)
+    session = requests_curl.CurlEasySession()
 
     response = session.get('https://httpbin.org/get', params={'val1': 4, 'val2': 2})
 
