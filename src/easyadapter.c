@@ -186,7 +186,13 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
 
     char *kwlist[] = {
-        "request", "stream", "timeout", "verify", "cert", "proxies", NULL
+        "request",      /* partial impl */
+        "stream",       /* TODO */
+        "timeout",      /* TODO */
+        "verify",       /* TODO */
+        "cert",         /* TODO */
+        "proxies",      /* TODO */
+        NULL
     };
 
     PyObject *request = NULL;
