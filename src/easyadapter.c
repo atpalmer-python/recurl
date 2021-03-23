@@ -22,6 +22,16 @@ _Curl_get_effective_url(CURL *curl)
 static void
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
+    /*
+     * PreparedRequest properties:
+     * - body
+     * - headers
+     * - hooks
+     * - method
+     * - path_url
+     * - url
+     */
+
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 }
 
