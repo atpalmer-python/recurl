@@ -186,21 +186,15 @@ CurlEasyAdapter_send(PyObject *self, PyObject *args, PyObject *kwargs)
     _Curl_set_buffers(curl, &headers, &body);
     curl_easy_perform(curl);
 
-    printf("HEADERS: %s\n", PyBytes_AsString(headers));
-
     PyObject *status_line = NULL;
     PyObject *header_fields = NULL;
 
     _headers_split(headers, &status_line, &header_fields);
-    printf("STATUS_LINE: %s\n", PyBytes_AsString(status_line));  /* TODO: parse reason phrase */
-
     PyObject *reason = _status_line_reason(status_line);
-    printf("REASON: %s\n", PyUnicode_AsUTF8(PyObject_Repr(reason)));
+    Py_DECREF(status_line);
 
     PyObject *headerdict = _header_fields_to_dict(header_fields);
-
     Py_DECREF(header_fields);
-    Py_DECREF(status_line);
 
     Py_INCREF(request);
 
