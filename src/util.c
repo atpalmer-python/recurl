@@ -30,6 +30,9 @@ util_dict_pick_off(PyObject *dict, const char *keys[])
 void
 util_pick_off_keywords(PyObject *kwdict, const char *kwlist[], ...)
 {
+    if (!kwdict)
+        return;
+
     va_list vargs;
     va_start(vargs, kwlist);
     for (const char **kwp = kwlist; *kwp; ++kwp) {

@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include "requests.h"
 #include "easyadapter.h"
+#include "util.h"
 
 static PyObject *
 _Curl_get_response_code(CURL *curl)
@@ -274,10 +275,7 @@ _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 
     PyObject *http_version = NULL;
 
-    if (PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist,
-            &http_version) < 0) {
-        return NULL;
-    }
+    util_pick_off_keywords(kwargs, kwlist, &http_version);
 
     CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
     new->curl = curl_easy_init();
