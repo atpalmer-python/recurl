@@ -57,22 +57,18 @@ fail:
 }
 
 static PyObject *
-_request(PyObject *self, PyObject *args, PyObject *kwargs)
+_session_method_call(const char *mname, PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *session = NULL;
     PyObject *emptyargs = PyTuple_New(0);
-
     if (!emptyargs)
         goto fail;
-
     session = _CurlEasySession(self, emptyargs, kwargs);
     if (!session)
         goto fail;
-
-    PyObject *method = PyObject_GetAttrString(session, "request");
+    PyObject *method = PyObject_GetAttrString(session, mname);
     if (!method)
         goto fail;
-
     PyObject *result = PyObject_Call(method, args, kwargs);
     Py_DECREF(session);
     Py_DECREF(emptyargs);
@@ -82,6 +78,12 @@ fail:
     Py_XDECREF(session);
     Py_XDECREF(emptyargs);
     return NULL;
+}
+
+static PyObject *
+_request(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    return _session_method_call("request", self, args, kwargs);
 }
 
 static PyMethodDef methods[] = {
