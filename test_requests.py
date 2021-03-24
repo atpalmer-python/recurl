@@ -49,3 +49,11 @@ def test_get():
     assert data['args'] == {'val1': '4', 'val2': '2'}
     assert data['url'] == 'https://httpbin.org/get?val1=4&val2=2'
 
+
+def test_head():
+    response = requests_curl.head('https://www.google.com/')
+    assert response.status_code == 200
+    assert response.content == None  # TODO: requests sets b''
+    assert 'date' in response.headers
+    assert 'expires' in response.headers
+
