@@ -61,3 +61,10 @@ def test_post():
     # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
     assert data['form'] == {}  # currently 'data' is not sent
 
+
+def test_put():
+    response = requests_curl.put('https://httpbin.org/put', data={'val1': 4, 'val2': 2})
+    data = response.json()
+    # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
+    assert data['form'] == {}  # currently 'data' is not sent
+
