@@ -265,8 +265,17 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     return RequestsMod_Response_InitNew(&resp_args);
 }
 
+static PyObject *
+CurlEasyAdapter_close(PyObject *_self, PyObject *args)
+{
+    CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
+    curl_easy_reset(self->curl);
+    Py_RETURN_NONE;
+}
+
 PyMethodDef methods[] = {
     {"send", (PyCFunction)CurlEasyAdapter_send, METH_VARARGS | METH_KEYWORDS, ""},
+    {"close", CurlEasyAdapter_close, METH_NOARGS, ""},
     {0},
 };
 

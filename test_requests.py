@@ -13,6 +13,12 @@ def test_bad_http_version_type():
         requests_curl.CurlEasyAdapter(http_version=1.1)
 
 
+def test_close():
+    adapter = requests_curl.CurlEasyAdapter()
+    adapter.close()
+    assert True  # just testing this method exists and can be called without raising
+
+
 def test_google():
     import datetime
 
