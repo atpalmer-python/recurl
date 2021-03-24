@@ -5,26 +5,55 @@
 static PyObject *
 _CurlEasySession(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *adapter = CurlEasyAdapter_New(kwargs);
-    PyObject *result = RequestsMod_Session_New();
-
-    PyObject *mount = PyUnicode_FromString("mount");
-    PyObject *http = PyUnicode_FromString("http://");
-    PyObject *https = PyUnicode_FromString("https://");
-
+    PyObject *adapter = NULL;
+    PyObject *session = NULL;
+    PyObject *mount = NULL;
+    PyObject *http = NULL;
+    PyObject *https = NULL;
     PyObject *mresult = NULL;
-    PyObject *httpsargs[] = {result, https, adapter};
+
+    adapter = CurlEasyAdapter_New(kwargs);
+    if (!adapter)
+        goto fail;
+    session = RequestsMod_Session_New();
+    if (!session)
+        goto fail;
+
+    mount = PyUnicode_FromString("mount");
+    if (!mount)
+        goto fail;
+    http = PyUnicode_FromString("http://");
+    if (!http)
+        goto fail;
+    https = PyUnicode_FromString("https://");
+    if (!https)
+        goto fail;
+
+    PyObject *httpsargs[] = {session, https, adapter};
     mresult = PyObject_VectorcallMethod(mount, httpsargs, 3, NULL);
+    if (!mresult)
+        goto fail;
     Py_DECREF(mresult);
-    PyObject *httpargs[] = {result, http, adapter};
+
+    PyObject *httpargs[] = {session, http, adapter};
     mresult = PyObject_VectorcallMethod(mount, httpargs, 3, NULL);
+    if (!mresult)
+        goto fail;
     Py_DECREF(mresult);
 
     Py_DECREF(mount);
     Py_DECREF(http);
     Py_DECREF(https);
 
-    return result;
+    return session;
+
+fail:
+    Py_XDECREF(adapter);
+    Py_XDECREF(session);
+    Py_XDECREF(mount);
+    Py_XDECREF(http);
+    Py_XDECREF(https);
+    return NULL;
 }
 
 static PyMethodDef methods[] = {
