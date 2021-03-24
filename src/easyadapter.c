@@ -273,7 +273,7 @@ PyMethodDef methods[] = {
 static PyObject *
 _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
-    char *kwlist[] = {
+    const char *kwlist[] = {
         "http_version", NULL
     };
 
