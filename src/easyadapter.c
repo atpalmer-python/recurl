@@ -273,6 +273,14 @@ PyMethodDef methods[] = {
 static PyObject *
 _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 {
+    /*
+     * requests HTTPAdapter supported arguments:
+     * - pool_connections
+     * - pool_maxsize
+     * - max_retries
+     * - pool_block
+     */
+
     const char *kwlist[] = {
         "http_version", NULL
     };
