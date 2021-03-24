@@ -75,3 +75,8 @@ def test_patch():
     # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
     assert data['form'] == {}  # currently 'data' is not sent
 
+
+def test_delete():
+    response = requests_curl.delete('https://httpbin.org/delete')
+    assert response.ok
+
