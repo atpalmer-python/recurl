@@ -56,8 +56,37 @@ fail:
     return NULL;
 }
 
+static PyObject *
+_request(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    PyObject *session = NULL;
+    PyObject *emptyargs = PyTuple_New(0);
+
+    if (!emptyargs)
+        goto fail;
+
+    session = _CurlEasySession(self, emptyargs, kwargs);
+    if (!session)
+        goto fail;
+
+    PyObject *method = PyObject_GetAttrString(session, "request");
+    if (!method)
+        goto fail;
+
+    PyObject *result = PyObject_Call(method, args, kwargs);
+    Py_DECREF(session);
+    Py_DECREF(emptyargs);
+    return result;
+
+fail:
+    Py_XDECREF(session);
+    Py_XDECREF(emptyargs);
+    return NULL;
+}
+
 static PyMethodDef methods[] = {
     {"CurlEasySession", (PyCFunction)_CurlEasySession, METH_VARARGS | METH_KEYWORDS, ""},
+    {"request", (PyCFunction)_request, METH_VARARGS | METH_KEYWORDS, ""},
     {0},
 };
 

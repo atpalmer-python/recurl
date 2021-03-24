@@ -5,8 +5,8 @@ import requests_curl
 def test_google():
     import datetime
 
-    session = requests_curl.CurlEasySession(http_version='1.1')
-    response = session.get('https://www.google.com/')  # TODO: implement requests_curl.get
+    # TODO: implement requests_curl.get
+    response = requests_curl.request('get', 'https://www.google.com/', http_version='1.1')
 
     assert response.apparent_encoding == 'ISO-8859-1'
     # assert response.cookies == None  # TODO
