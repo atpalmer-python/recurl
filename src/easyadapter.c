@@ -53,8 +53,12 @@ _Curl_set_http_version(CURL *curl, PyObject *http_version)
         return 0;
     if (http_version == Py_None)
         return 0;
-    if (!PyUnicode_Check(http_version))
+    if (!PyUnicode_Check(http_version)) {
+        PyErr_Format(PyExc_TypeError,
+            "http_version must be of type 'str', not '%s'\n",
+            Py_TYPE(http_version)->tp_name);
         return -1;
+    }
 
     const char *verstr = PyUnicode_AsUTF8(http_version);
 
@@ -71,7 +75,7 @@ _Curl_set_http_version(CURL *curl, PyObject *http_version)
         verval = CURL_HTTP_VERSION_3;
 #endif
     } else {
-        PyErr_Format(PyExc_ValueError, "Unsupported version: %s\n", verstr);
+        PyErr_Format(PyExc_ValueError, "Unsupported HTTP version: %s\n", verstr);
         return -1;
     }
 
@@ -280,9 +284,14 @@ _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
     CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
     new->curl = curl_easy_init();
 
-    _Curl_set_http_version(new->curl, http_version);
+    if (_Curl_set_http_version(new->curl, http_version) < 0)
+        goto fail;
 
     return (PyObject *)new;
+
+fail:
+    Py_DECREF(new);
+    return NULL;
 }
 
 PyObject *

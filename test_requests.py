@@ -1,5 +1,16 @@
+import pytest
 import requests
 import requests_curl
+
+
+def test_bad_http_version_value():
+    with pytest.raises(ValueError):
+        requests_curl.CurlEasyAdapter(http_version='abc')
+
+
+def test_bad_http_version_type():
+    with pytest.raises(TypeError):
+        requests_curl.CurlEasyAdapter(http_version=1.1)
 
 
 def test_google():
