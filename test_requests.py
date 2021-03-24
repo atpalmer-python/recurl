@@ -40,6 +40,14 @@ def test_google():
     assert response.url == 'https://www.google.com/'
 
 
+def test_head():
+    response = requests_curl.head('https://www.google.com/')
+    assert response.status_code == 200
+    assert response.content == None  # TODO: requests sets b''
+    assert 'date' in response.headers
+    assert 'expires' in response.headers
+
+
 def test_get():
     response = requests_curl.get('https://httpbin.org/get', params={'val1': 4, 'val2': 2})
     data = response.json()
@@ -47,10 +55,9 @@ def test_get():
     assert data['url'] == 'https://httpbin.org/get?val1=4&val2=2'
 
 
-def test_head():
-    response = requests_curl.head('https://www.google.com/')
-    assert response.status_code == 200
-    assert response.content == None  # TODO: requests sets b''
-    assert 'date' in response.headers
-    assert 'expires' in response.headers
+def test_post():
+    response = requests_curl.post('https://httpbin.org/post', data={'val1': 4, 'val2': 2})
+    data = response.json()
+    # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
+    assert data['form'] == {}  # currently 'data' is not sent
 
