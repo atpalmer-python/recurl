@@ -206,6 +206,22 @@ _status_line_reason(PyObject *statusbytes)
 }
 
 static PyObject *
+_parse_response_headers(PyObject *headerbytes, PyObject **reason)
+{
+    PyObject *status_line = NULL;
+    PyObject *header_fields = NULL;
+
+    _headers_split(headerbytes, &status_line, &header_fields);
+    *reason = _status_line_reason(status_line);
+    Py_DECREF(status_line);
+
+    PyObject *headerdict = _header_fields_to_dict(header_fields);
+    Py_DECREF(header_fields);
+
+    return headerdict;
+}
+
+static PyObject *
 CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
 {
     CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
@@ -239,16 +255,8 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     _Curl_set_buffers(self->curl, &headers, &body);
     curl_easy_perform(self->curl);
 
-    PyObject *status_line = NULL;
-    PyObject *header_fields = NULL;
-
-    _headers_split(headers, &status_line, &header_fields);
-    PyObject *reason = _status_line_reason(status_line);
-    Py_DECREF(status_line);
-
-    PyObject *headerdict = _header_fields_to_dict(header_fields);
-    Py_DECREF(header_fields);
-
+    PyObject *reason = NULL;
+    PyObject *headerdict = _parse_response_headers(headers, &reason);
     Py_INCREF(request);
 
     /* Add negotiated HTTP version to Response object? */
