@@ -286,9 +286,12 @@ _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 }
 
 PyObject *
-CurlEasyAdapter_New(PyObject *args, PyObject *kwargs)
+CurlEasyAdapter_New(PyObject *kwargs)
 {
-    return _CurlEasyAdapter_New(&CurlEasyAdapter_Type, args, kwargs);
+    PyObject *args = PyTuple_New(0);
+    PyObject *new = _CurlEasyAdapter_New(&CurlEasyAdapter_Type, args, kwargs);
+    Py_DECREF(args);
+    return new;
 }
 
 static void

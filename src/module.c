@@ -5,7 +5,7 @@
 static PyObject *
 _CurlEasySession(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-    PyObject *adapter = CurlEasyAdapter_New(args, kwargs);
+    PyObject *adapter = CurlEasyAdapter_New(kwargs);
     PyObject *result = RequestsMod_Session_New();
 
     PyObject *mount = PyUnicode_FromString("mount");

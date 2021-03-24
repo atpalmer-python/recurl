@@ -10,6 +10,6 @@ typedef struct {
 
 extern PyTypeObject CurlEasyAdapter_Type;
 
-PyObject *CurlEasyAdapter_New(PyObject *args, PyObject *kwargs);
+PyObject *CurlEasyAdapter_New(PyObject *kwargs);
 
 #endif
