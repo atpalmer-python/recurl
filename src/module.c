@@ -92,10 +92,17 @@ _head(PyObject *self, PyObject *args, PyObject *kwargs)
     return _session_method_call("head", self, args, kwargs);
 }
 
+static PyObject *
+_get(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    return _session_method_call("get", self, args, kwargs);
+}
+
 static PyMethodDef methods[] = {
     {"CurlEasySession", (PyCFunction)_CurlEasySession, METH_VARARGS | METH_KEYWORDS, ""},
     {"request", (PyCFunction)_request, METH_VARARGS | METH_KEYWORDS, ""},
     {"head", (PyCFunction)_head, METH_VARARGS | METH_KEYWORDS, ""},
+    {"get", (PyCFunction)_get, METH_VARARGS | METH_KEYWORDS, ""},
     {0},
 };
 

@@ -41,10 +41,7 @@ def test_google():
 
 
 def test_get():
-    session = requests_curl.CurlEasySession()
-
-    response = session.get('https://httpbin.org/get', params={'val1': 4, 'val2': 2})
-
+    response = requests_curl.get('https://httpbin.org/get', params={'val1': 4, 'val2': 2})
     data = response.json()
     assert data['args'] == {'val1': '4', 'val2': '2'}
     assert data['url'] == 'https://httpbin.org/get?val1=4&val2=2'
