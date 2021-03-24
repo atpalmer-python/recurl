@@ -110,6 +110,12 @@ _put(PyObject *self, PyObject *args, PyObject *kwargs)
     return _session_method_call("put", self, args, kwargs);
 }
 
+static PyObject *
+_patch(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    return _session_method_call("patch", self, args, kwargs);
+}
+
 static PyMethodDef methods[] = {
     {"CurlEasySession", (PyCFunction)_CurlEasySession, METH_VARARGS | METH_KEYWORDS, ""},
     {"request", (PyCFunction)_request, METH_VARARGS | METH_KEYWORDS, ""},
@@ -117,6 +123,7 @@ static PyMethodDef methods[] = {
     {"get", (PyCFunction)_get, METH_VARARGS | METH_KEYWORDS, ""},
     {"post", (PyCFunction)_post, METH_VARARGS | METH_KEYWORDS, ""},
     {"put", (PyCFunction)_put, METH_VARARGS | METH_KEYWORDS, ""},
+    {"patch", (PyCFunction)_patch, METH_VARARGS | METH_KEYWORDS, ""},
     {0},
 };
 

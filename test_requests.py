@@ -68,3 +68,10 @@ def test_put():
     # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
     assert data['form'] == {}  # currently 'data' is not sent
 
+
+def test_patch():
+    response = requests_curl.patch('https://httpbin.org/patch', data={'val1': 4, 'val2': 2})
+    data = response.json()
+    # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
+    assert data['form'] == {}  # currently 'data' is not sent
+
