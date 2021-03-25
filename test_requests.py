@@ -27,8 +27,7 @@ def test_close():
 def test_google():
     import datetime
 
-    # TODO: implement requests_curl.get
-    response = requests_curl.request('get', 'https://www.google.com/', http_version='1.1')
+    response = requests_curl.get('https://www.google.com/', http_version='1.1')
 
     assert response.apparent_encoding == 'ISO-8859-1'
     # assert response.cookies == None  # TODO
