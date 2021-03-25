@@ -86,3 +86,13 @@ def test_delete():
     response = requests_curl.delete('https://httpbin.org/delete')
     assert response.ok
 
+
+def test_timeout():
+    with pytest.raises(Exception):  # TODO: ReadTimeout
+        requests_curl.get('https://httpbin.org/delay/2', timeout=1)
+
+
+def test_timeout_tuple():
+    with pytest.raises(Exception):  # TODO: ReadTimeout
+        requests_curl.get('https://httpbin.org/delay/2', timeout=(1, 1))
+

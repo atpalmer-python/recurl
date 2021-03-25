@@ -4,6 +4,18 @@
 #include "easyadapter.h"
 #include "util.h"
 
+static CURLcode
+_Curl_invoke(CURL *curl)
+{
+    CURLcode ecode = curl_easy_perform(curl);
+    if (ecode != CURLE_OK) {
+        /* TODO: raise specific exception types */
+        PyErr_Format(PyExc_Exception,
+            "CURL error (%d): %s", ecode, curl_easy_strerror(ecode));
+    }
+    return ecode;
+}
+
 static PyObject *
 _Curl_get_response_code(CURL *curl)
 {
@@ -44,6 +56,35 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 
     _Curl_set_method(curl, RequestsMod_PreparedRequest_method(prepreq));
+}
+
+static int
+_Curl_set_timeout(CURL *curl, PyObject *timeout)
+{
+    if (!timeout)
+        return 0;
+    if (timeout == Py_None)
+        return 0;
+
+    if (PyNumber_Check(timeout)) {
+        double to = PyFloat_AsDouble(timeout);
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(to * 1000.0));
+        return 0;
+    }
+
+    if (PyTuple_Check(timeout)) {
+        double connto, readto;
+        if (!PyArg_ParseTuple(timeout, "dd", &connto, &readto)) {
+            PyErr_SetString(PyExc_TypeError, "Invalid timeout argument");
+            return -1;
+        }
+        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)(connto * 1000.0));
+        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(readto * 1000.0));
+        return 0;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Invalid timeout argument");
+    return -1;
 }
 
 static int
@@ -229,7 +270,7 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     char *kwlist[] = {
         "request",      /* partial impl */
         "stream",       /* TODO */
-        "timeout",      /* TODO */
+        "timeout",      /* done */
         "verify",       /* TODO */
         "cert",         /* TODO */
         "proxies",      /* TODO */
@@ -252,8 +293,14 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     PyObject *body = NULL;
 
     _Curl_apply_PreparedRequest(self->curl, request);
+
+    if (_Curl_set_timeout(self->curl, timeout) < 0)
+        return NULL;
+
     _Curl_set_buffers(self->curl, &headers, &body);
-    curl_easy_perform(self->curl);
+
+    if (_Curl_invoke(self->curl) != CURLE_OK)
+        return NULL;
 
     PyObject *reason = NULL;
     PyObject *headerdict = _parse_response_headers(headers, &reason);
