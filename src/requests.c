@@ -30,8 +30,16 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
 {
     /*
      * requests.Request attributes:
-     * '_content', 'status_code', 'headers', 'url', 'history',
-     * 'encoding', 'reason', 'cookies', 'elapsed', 'request'
+     * - '_content'     // TODO: support streaming content
+     * - 'status_code'  // done
+     * - 'headers'      // done
+     * - 'url'          // done
+     * - 'history',     // TODO
+     * - 'encoding'     // TODO
+     * - 'reason'       // done
+     * - 'cookies'      // TODO
+     * - 'elapsed'      // TODO
+     * - 'request'      // done
      */
     PyObject *response = _import_default_instance("requests", "Response");
     if (!response)
@@ -41,13 +49,13 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
         return NULL;
     if (PyObject_SetAttrString(response, "status_code", args->status_code) < 0)
         return NULL;
-    if (PyObject_SetAttrString(response, "url", args->url) < 0)
-        return NULL;
-    if (PyObject_SetAttrString(response, "request", args->request) < 0)
-        return NULL;
     if (PyObject_SetAttrString(response, "headers", args->headers) < 0)
         return NULL;
+    if (PyObject_SetAttrString(response, "url", args->url) < 0)
+        return NULL;
     if (PyObject_SetAttrString(response, "reason", args->reason) < 0)
+        return NULL;
+    if (PyObject_SetAttrString(response, "request", args->request) < 0)
         return NULL;
 
     return response;
