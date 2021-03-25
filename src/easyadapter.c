@@ -364,7 +364,13 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     PyObject *headerdict = _parse_response_headers(headers, &reason);
     Py_INCREF(request);
 
-    /* Add negotiated HTTP version to Response object? */
+    /* Add to Response object?
+     * HTTP_VERSION
+     * timings: NAMELOOKUP, CONNECT, APPCONNECT, PRETRANSFER, STARTTRANSFER, TOTAL, REDIRECT
+     * PRIMARY_IP, PRIMARY_PORT
+     * CERTINFO
+     * other...?
+     */
 
     RequestsMod_ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(self->curl),

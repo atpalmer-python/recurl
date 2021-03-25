@@ -38,7 +38,7 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
      * - 'encoding'     // TODO
      * - 'reason'       // done
      * - 'cookies'      // TODO
-     * - 'elapsed'      // TODO
+     * - 'elapsed'      // set by requests.Session.send
      * - 'request'      // done
      */
     PyObject *response = _import_default_instance("requests", "Response");
