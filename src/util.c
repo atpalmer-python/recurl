@@ -21,6 +21,13 @@ util_or_Py_None(PyObject *o)
 }
 
 PyObject *
+util_incref(PyObject *o)
+{
+    Py_INCREF(o);
+    return o;
+}
+
+PyObject *
 util_dict_pop(PyObject *dict, const char *key)
 {
     PyObject *result = PyDict_GetItemString(dict, key);

@@ -347,7 +347,6 @@ _Curl_send(CURL *curl, struct send_args *args)
 
     PyObject *reason = NULL;
     PyObject *headerdict = _parse_response_headers(headers, &reason);
-    Py_INCREF(args->request);
 
     /* Add to Response object?
      * HTTP_VERSION
@@ -361,7 +360,7 @@ _Curl_send(CURL *curl, struct send_args *args)
         .status_code = _Curl_get_response_code(curl),
         .content = util_or_Py_None(body),
         .url = _Curl_get_effective_url(curl),
-        .request = args->request,
+        .request = util_incref(args->request),
         .headers = headerdict,
         .reason = reason,
         .encoding = RequestsMod_get_encoding_from_headers(headerdict),
