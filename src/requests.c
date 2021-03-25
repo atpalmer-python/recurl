@@ -57,6 +57,8 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
         return NULL;
     if (PyObject_SetAttrString(response, "request", args->request) < 0)
         return NULL;
+    if (PyObject_SetAttrString(response, "encoding", args->encoding) < 0)
+        return NULL;
 
     return response;
 }
@@ -71,6 +73,16 @@ PyObject *
 RequestsMod_Session_New(void)
 {
     return _import_default_instance("requests", "Session");
+}
+
+PyObject *
+RequestsMod_get_encoding_from_headers(PyObject *headers)
+{
+    PyObject *func = _import_obj("requests.utils", "get_encoding_from_headers");
+    if (!func)
+        return NULL;
+    /* Returns encoding as PyUnicode object */
+    return PyObject_CallOneArg(func, headers);
 }
 
 const char *

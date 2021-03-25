@@ -32,7 +32,7 @@ def test_google():
     assert response.apparent_encoding == 'ISO-8859-1'
     # assert response.cookies == None  # TODO
     assert isinstance(response.elapsed, datetime.timedelta)
-    assert response.encoding == None  # TODO
+    assert response.encoding == 'ISO-8859-1'
     assert 'Date' in response.headers
     assert response.headers['date'] == response.headers['Date']
     assert response.headers['Expires'] == '-1'

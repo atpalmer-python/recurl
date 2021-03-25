@@ -379,6 +379,7 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
         .request = request,
         .headers = headerdict,
         .reason = reason,
+        .encoding = RequestsMod_get_encoding_from_headers(headerdict),
     };
 
     return RequestsMod_Response_InitNew(&resp_args);
