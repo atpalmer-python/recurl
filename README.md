@@ -35,3 +35,19 @@ response = requests_curl.get('https://www.google.com/')
 print(response.ok)
 ```
 
+# TODO
+
+* Process form data `.post(..., data={ ***form data*** })`
+* Read off all PreparedRequest attributes (headers, etc.)
+* Cookies/CookieJars
+* Exceptions
+* Streaming downloads
+* History
+* Links
+* Hooks
+* Proxies
+* Parse HTTP line continuations
+* Audit API vs. requests
+* Extend API for CURL-specific features?
+* CURL "multi" sessions (async requests)
+
