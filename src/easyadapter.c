@@ -106,6 +106,43 @@ _Curl_set_verify(CURL *curl, PyObject *verify)
 }
 
 static int
+_Curl_set_cert(CURL *curl, PyObject *certobj)
+{
+    if (!certobj)
+        return 0;
+    if (certobj == Py_None)
+        return 0;
+
+    if (PyUnicode_Check(certobj)) {
+        curl_easy_setopt(curl, CURLOPT_SSLCERT, PyUnicode_AsUTF8(certobj));
+        return 0;
+    }
+
+    if (PyTuple_Check(certobj)) {
+        const char *cert;
+        const char *key;
+        if (!PyArg_ParseTuple(certobj, "ss", &cert, &key)) {
+            PyErr_SetString(PyExc_TypeError, "Invalid cert argument");
+            return -1;
+        }
+        curl_easy_setopt(curl, CURLOPT_SSLCERT, cert);
+        curl_easy_setopt(curl, CURLOPT_SSLKEY, key);
+        return 0;
+    }
+
+    /* TODO: extend API for key password?
+     * curl_easy_setopt(curl, CURLOPT_KEYPASSWD, ???);
+     * See also: https://github.com/psf/requests/issues/1573
+     *
+     * Extend API for cert "blobs"? cert types? proxy certs?
+     * SSL versions? OpenSSL engines? etc., etc.
+     */
+
+    PyErr_SetString(PyExc_TypeError, "Invalid cert argument");
+    return -1;
+}
+
+static int
 _Curl_set_http_version(CURL *curl, PyObject *http_version)
 {
     if (!http_version)
@@ -269,7 +306,7 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
         "stream",       /* TODO */
         "timeout",      /* done */
         "verify",       /* done */
-        "cert",         /* TODO */
+        "cert",         /* done */
         "proxies",      /* TODO */
         NULL
     };
@@ -294,6 +331,8 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     if (_Curl_set_timeout(self->curl, timeout) < 0)
         return NULL;
     if (_Curl_set_verify(self->curl, verify) < 0)
+        return NULL;
+    if (_Curl_set_cert(self->curl, cert) < 0)
         return NULL;
 
     _Curl_set_buffers(self->curl, &headers, &body);
