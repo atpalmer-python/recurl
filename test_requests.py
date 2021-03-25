@@ -13,6 +13,11 @@ def test_bad_http_version_type():
         requests_curl.CurlEasyAdapter(http_version=1.1)
 
 
+def test_bad_maxconnects_type():
+    with pytest.raises(TypeError):
+        requests_curl.CurlEasyAdapter(maxconnects=1.1)
+
+
 def test_close():
     adapter = requests_curl.CurlEasyAdapter()
     adapter.close()
