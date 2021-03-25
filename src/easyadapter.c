@@ -403,6 +403,17 @@ _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
      * - pool_block
      */
 
+    /*
+     * CURLOPTs to possibly support:
+     * - DNS_SERVERS
+     * - DNS_CACHE_TIMEOUT
+     * - VERBOSE
+     * - USERAGENT
+     * - REFERER
+     * - INTERFACE
+     * - MAXREDIRS? (handled by requests.Session)
+     */
+
     /* Keyword names match CURLOPT_* name */
     const char *kwlist[] = {
         "http_version", "maxconnects", NULL
