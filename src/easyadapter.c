@@ -180,6 +180,26 @@ _Curl_set_http_version(CURL *curl, PyObject *http_version)
     return 0;
 }
 
+static int
+_Curl_set_maxconnects(CURL *curl, PyObject *maxconnects)
+{
+    if (!maxconnects)
+        return 0;
+    if (maxconnects == Py_None)
+        return 0;
+
+    if (!PyLong_Check(maxconnects)) {
+        PyErr_Format(PyExc_TypeError,
+            "maxconnects must be of type 'int', not '%s'\n",
+            Py_TYPE(maxconnects)->tp_name);
+        return -1;
+    }
+
+    long val = PyLong_AsLong(maxconnects);
+    curl_easy_setopt(curl, CURLOPT_MAXCONNECTS, val);
+    return 0;
+}
+
 static size_t
 write_callback(void *contents, size_t size, size_t count, void *_buff)
 {
@@ -383,18 +403,22 @@ _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
      * - pool_block
      */
 
+    /* Keyword names match CURLOPT_* name */
     const char *kwlist[] = {
-        "http_version", NULL
+        "http_version", "maxconnects", NULL
     };
 
     PyObject *http_version = NULL;
+    PyObject *maxconnects = NULL;
 
-    util_pick_off_keywords(kwargs, kwlist, &http_version);
+    util_pick_off_keywords(kwargs, kwlist, &http_version, &maxconnects);
 
     CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
     new->curl = curl_easy_init();
 
     if (_Curl_set_http_version(new->curl, http_version) < 0)
+        goto fail;
+    if (_Curl_set_maxconnects(new->curl, maxconnects) < 0)
         goto fail;
 
     return (PyObject *)new;
