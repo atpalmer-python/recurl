@@ -179,14 +179,6 @@ _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
     return 0;
 }
 
-const char *
-_skip_linearwhitespace(const char *p)
-{
-    while (*p == ' ' || *p == '\t')
-        ++p;
-    return p;
-}
-
 static PyObject *
 _header_fields_to_dict(PyObject *fieldbytes)
 {
@@ -204,7 +196,7 @@ _header_fields_to_dict(PyObject *fieldbytes)
         if (!end)
             break;
 
-        const char *vstart = _skip_linearwhitespace(&sep[1]);
+        const char *vstart = util_skip_linearwhitespace(&sep[1]);
 
         Py_ssize_t vlen = end - vstart;
         PyObject *value = PyUnicode_FromStringAndSize(vstart, vlen);
@@ -232,18 +224,6 @@ _header_fields_to_dict(PyObject *fieldbytes)
 }
 
 PyObject *
-_Py_None_New(void)
-{
-    Py_RETURN_NONE;
-}
-
-PyObject *
-_or_Py_None(PyObject *o)
-{
-    return o ? o : _Py_None_New();
-}
-
-PyObject *
 _status_line_reason(PyObject *statusbytes)
 {
     const char *bytes = PyBytes_AsString(statusbytes);
@@ -253,14 +233,14 @@ _status_line_reason(PyObject *statusbytes)
     if (!protoend)
         return NULL;
 
-    const char *codestart = _skip_linearwhitespace(&protoend[1]);
+    const char *codestart = util_skip_linearwhitespace(&protoend[1]);
     const char *codeend = strchr(codestart, ' ');
     if (!codeend)
         return NULL;
 
-    const char *reason = _skip_linearwhitespace(&codeend[1]);
+    const char *reason = util_skip_linearwhitespace(&codeend[1]);
 
-    return *reason ? PyUnicode_FromString(reason) : _Py_None_New();
+    return *reason ? PyUnicode_FromString(reason) : util_Py_None_New();
 }
 
 static PyObject *
@@ -329,7 +309,7 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
 
     RequestsMod_ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(self->curl),
-        .content = _or_Py_None(body),
+        .content = util_or_Py_None(body),
         .url = _Curl_get_effective_url(self->curl),
         .request = request,
         .headers = headerdict,

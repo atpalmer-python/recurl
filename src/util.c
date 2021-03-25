@@ -1,5 +1,25 @@
 #include <Python.h>
 
+const char *
+util_skip_linearwhitespace(const char *p)
+{
+    while (*p == ' ' || *p == '\t')
+        ++p;
+    return p;
+}
+
+PyObject *
+util_Py_None_New(void)
+{
+    Py_RETURN_NONE;
+}
+
+PyObject *
+util_or_Py_None(PyObject *o)
+{
+    return o ? o : util_Py_None_New();
+}
+
 PyObject *
 util_dict_pop(PyObject *dict, const char *key)
 {
