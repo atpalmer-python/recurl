@@ -88,6 +88,24 @@ _Curl_set_timeout(CURL *curl, PyObject *timeout)
 }
 
 static int
+_Curl_set_verify(CURL *curl, PyObject *verify)
+{
+    if (PyBool_Check(verify)) {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verify == Py_True);
+        return 0;
+    }
+
+    if (PyUnicode_Check(verify)) {
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(curl, CURLOPT_CAINFO, PyUnicode_AsUTF8(verify));
+        return 0;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Invalid verify argument");
+    return -1;
+}
+
+static int
 _Curl_set_http_version(CURL *curl, PyObject *http_version)
 {
     if (!http_version)
@@ -271,7 +289,7 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
         "request",      /* partial impl */
         "stream",       /* TODO */
         "timeout",      /* done */
-        "verify",       /* TODO */
+        "verify",       /* done */
         "cert",         /* TODO */
         "proxies",      /* TODO */
         NULL
@@ -295,6 +313,8 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     _Curl_apply_PreparedRequest(self->curl, request);
 
     if (_Curl_set_timeout(self->curl, timeout) < 0)
+        return NULL;
+    if (_Curl_set_verify(self->curl, verify) < 0)
         return NULL;
 
     _Curl_set_buffers(self->curl, &headers, &body);
