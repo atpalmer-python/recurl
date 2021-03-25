@@ -316,10 +316,65 @@ _parse_response_headers(PyObject *headerbytes, PyObject **reason)
     return headerdict;
 }
 
+struct send_args {
+    PyObject *request;
+    PyObject *stream;
+    PyObject *timeout;
+    PyObject *verify;
+    PyObject *cert;
+    PyObject *proxies;
+};
+
+PyObject *
+_Curl_send(CURL *curl, struct send_args *args)
+{
+    PyObject *headers = NULL;
+    PyObject *body = NULL;
+
+    _Curl_apply_PreparedRequest(curl, args->request);
+
+    if (_Curl_set_timeout(curl, args->timeout) < 0)
+        return NULL;
+    if (_Curl_set_verify(curl, args->verify) < 0)
+        return NULL;
+    if (_Curl_set_cert(curl, args->cert) < 0)
+        return NULL;
+
+    _Curl_set_buffers(curl, &headers, &body);
+
+    if (_Curl_invoke(curl) != CURLE_OK)
+        return NULL;
+
+    PyObject *reason = NULL;
+    PyObject *headerdict = _parse_response_headers(headers, &reason);
+    Py_INCREF(args->request);
+
+    /* Add to Response object?
+     * HTTP_VERSION
+     * timings: NAMELOOKUP, CONNECT, APPCONNECT, PRETRANSFER, STARTTRANSFER, TOTAL, REDIRECT
+     * PRIMARY_IP, PRIMARY_PORT
+     * CERTINFO
+     * other...?
+     */
+
+    RequestsMod_ResponseArgs resp_args = {
+        .status_code = _Curl_get_response_code(curl),
+        .content = util_or_Py_None(body),
+        .url = _Curl_get_effective_url(curl),
+        .request = args->request,
+        .headers = headerdict,
+        .reason = reason,
+        .encoding = RequestsMod_get_encoding_from_headers(headerdict),
+    };
+
+    return RequestsMod_Response_InitNew(&resp_args);
+}
+
 static PyObject *
 CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
 {
     CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
+    struct send_args send_args = {0};
 
     char *kwlist[] = {
         "request",      /* partial impl */
@@ -331,58 +386,13 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
         NULL
     };
 
-    PyObject *request = NULL;
-    PyObject *stream = NULL;
-    PyObject *timeout = NULL;
-    PyObject *verify = NULL;
-    PyObject *cert = NULL;
-    PyObject *proxies = NULL;
-
     if (PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOOO", kwlist,
-            &request, &stream, &timeout, &verify, &cert, &proxies) < 0) {
+            &send_args.request, &send_args.stream, &send_args.timeout,
+            &send_args.verify, &send_args.cert, &send_args.proxies) < 0) {
         return NULL;
     }
 
-    PyObject *headers = NULL;
-    PyObject *body = NULL;
-
-    _Curl_apply_PreparedRequest(self->curl, request);
-
-    if (_Curl_set_timeout(self->curl, timeout) < 0)
-        return NULL;
-    if (_Curl_set_verify(self->curl, verify) < 0)
-        return NULL;
-    if (_Curl_set_cert(self->curl, cert) < 0)
-        return NULL;
-
-    _Curl_set_buffers(self->curl, &headers, &body);
-
-    if (_Curl_invoke(self->curl) != CURLE_OK)
-        return NULL;
-
-    PyObject *reason = NULL;
-    PyObject *headerdict = _parse_response_headers(headers, &reason);
-    Py_INCREF(request);
-
-    /* Add to Response object?
-     * HTTP_VERSION
-     * timings: NAMELOOKUP, CONNECT, APPCONNECT, PRETRANSFER, STARTTRANSFER, TOTAL, REDIRECT
-     * PRIMARY_IP, PRIMARY_PORT
-     * CERTINFO
-     * other...?
-     */
-
-    RequestsMod_ResponseArgs resp_args = {
-        .status_code = _Curl_get_response_code(self->curl),
-        .content = util_or_Py_None(body),
-        .url = _Curl_get_effective_url(self->curl),
-        .request = request,
-        .headers = headerdict,
-        .reason = reason,
-        .encoding = RequestsMod_get_encoding_from_headers(headerdict),
-    };
-
-    return RequestsMod_Response_InitNew(&resp_args);
+    return _Curl_send(self->curl, &send_args);
 }
 
 static PyObject *
