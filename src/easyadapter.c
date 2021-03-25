@@ -179,6 +179,14 @@ _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
     return 0;
 }
 
+const char *
+_skip_linearwhitespace(const char *p)
+{
+    while (*p == ' ' || *p == '\t')
+        ++p;
+    return p;
+}
+
 static PyObject *
 _header_fields_to_dict(PyObject *fieldbytes)
 {
@@ -196,9 +204,8 @@ _header_fields_to_dict(PyObject *fieldbytes)
         if (!end)
             break;
 
-        const char *vstart = &sep[1];
-        while (*vstart == ' ')
-            ++vstart;
+        const char *vstart = _skip_linearwhitespace(&sep[1]);
+
         Py_ssize_t vlen = end - vstart;
         PyObject *value = PyUnicode_FromStringAndSize(vstart, vlen);
 
@@ -222,14 +229,6 @@ _header_fields_to_dict(PyObject *fieldbytes)
     }
 
     return headerdict;
-}
-
-const char *
-_skip_linearwhitespace(const char *p)
-{
-    while (*p == ' ' || *p == '\t')
-        ++p;
-    return p;
 }
 
 PyObject *
