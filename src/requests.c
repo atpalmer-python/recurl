@@ -35,7 +35,7 @@ RequestsMod_Response_InitNew(RequestsMod_ResponseArgs *args)
      * - 'headers'      // done
      * - 'url'          // done
      * - 'history',     // TODO
-     * - 'encoding'     // TODO
+     * - 'encoding'     // done
      * - 'reason'       // done
      * - 'cookies'      // TODO
      * - 'elapsed'      // set by requests.Session.send
