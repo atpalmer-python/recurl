@@ -37,11 +37,11 @@ print(response.ok)
 
 # TODO
 
-* Process form data `.post(..., data={ ***form data*** })`
 * Read off all PreparedRequest attributes (headers, etc.)
 * Cookies/CookieJars
 * Exceptions
 * Streaming downloads
+* Streaming uploads
 * History
 * Links
 * Hooks
