@@ -8,6 +8,16 @@ util_skip_linearwhitespace(const char *p)
     return p;
 }
 
+int
+util_has_value(PyObject *o)
+{
+    if (!o)
+        return 0;
+    if (o == Py_None)
+        return 0;
+    return 1;
+}
+
 PyObject *
 util_Py_None_New(void)
 {

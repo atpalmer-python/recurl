@@ -62,9 +62,7 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 static int
 _Curl_set_timeout(CURL *curl, PyObject *timeout)
 {
-    if (!timeout)
-        return 0;
-    if (timeout == Py_None)
+    if (!util_has_value(timeout))
         return 0;
 
     if (PyNumber_Check(timeout)) {
@@ -109,9 +107,7 @@ _Curl_set_verify(CURL *curl, PyObject *verify)
 static int
 _Curl_set_cert(CURL *curl, PyObject *certobj)
 {
-    if (!certobj)
-        return 0;
-    if (certobj == Py_None)
+    if (!util_has_value(certobj))
         return 0;
 
     if (PyUnicode_Check(certobj)) {
@@ -146,9 +142,7 @@ _Curl_set_cert(CURL *curl, PyObject *certobj)
 static int
 _Curl_set_http_version(CURL *curl, PyObject *http_version)
 {
-    if (!http_version)
-        return 0;
-    if (http_version == Py_None)
+    if (!util_has_value(http_version))
         return 0;
     if (!PyUnicode_Check(http_version)) {
         PyErr_Format(PyExc_TypeError,
@@ -184,9 +178,7 @@ _Curl_set_http_version(CURL *curl, PyObject *http_version)
 static int
 _Curl_set_maxconnects(CURL *curl, PyObject *maxconnects)
 {
-    if (!maxconnects)
-        return 0;
-    if (maxconnects == Py_None)
+    if (!util_has_value(maxconnects))
         return 0;
 
     if (!PyLong_Check(maxconnects)) {
