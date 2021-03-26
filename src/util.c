@@ -21,6 +21,9 @@ util_has_value(PyObject *o)
 PyObject *
 util_ensure_type(PyObject *o, PyTypeObject *tp, const char *name)
 {
+    if (!name)
+        name = "value";
+
     if (!o) {
         if (PyErr_Occurred())
             return NULL;
@@ -38,6 +41,20 @@ util_ensure_type(PyObject *o, PyTypeObject *tp, const char *name)
         "%s must be of type '%s', not '%s'\n",
         name,
         tp->tp_name,
+        Py_TYPE(o)->tp_name);
+
+    return NULL;
+}
+
+PyObject *
+util_ensure_mapping(PyObject *o, const char *name)
+{
+    if (PyMapping_Check(o))
+        return o;
+
+    PyErr_Format(PyExc_TypeError,
+        "%s must be a mapping, not '%s'\n",
+        name,
         Py_TYPE(o)->tp_name);
 
     return NULL;

@@ -5,6 +5,37 @@
 #include "util.h"
 #include "constants.h"
 
+struct curl_private_data {
+    /* not automatically freed by curl_easy_cleanup, so hold onto pointer */
+    struct curl_slist *headers;
+};
+
+struct curl_private_data *
+_Curl_get_private_or_new(CURL *curl)
+{
+    struct curl_private_data *data = NULL;
+    curl_easy_getinfo(curl, CURLINFO_PRIVATE, &data);
+    if (data)
+        return data;
+
+    data = PyMem_Calloc(sizeof *data, 1);
+    curl_easy_setopt(curl, CURLOPT_PRIVATE, data);
+    return data;
+}
+
+void
+_Curl_free(CURL *curl)
+{
+    struct curl_private_data *data = NULL;
+    curl_easy_getinfo(curl, CURLINFO_PRIVATE, &data);
+    if (data) {
+        curl_slist_free_all(data->headers);
+        PyMem_Free(data);
+    }
+
+    curl_easy_cleanup(curl);
+}
+
 static CURLcode
 _Curl_invoke(CURL *curl)
 {
@@ -68,6 +99,62 @@ _Curl_set_method(CURL *curl, PyObject *methodobj)
 }
 
 static int
+_Curl_set_headers(CURL *curl, PyObject *headersobj)
+{
+    if (!util_has_value(headersobj))
+        return 0;
+    if (!util_ensure_mapping(headersobj, "headers"))
+        return -1;
+
+    struct curl_private_data *data = _Curl_get_private_or_new(curl);
+    data->headers = NULL;
+
+    /* Accept-Encoding needs to be handled as a special case
+     * for curl to automatically decompress the response.
+     */
+    if (PyMapping_HasKeyString(headersobj, "accept-encoding")) {
+        PyObject *encobj = PyMapping_GetItemString(headersobj, "accept-encoding");
+        if (!util_ensure_type(encobj, &PyUnicode_Type, "accept-encoding"))
+            goto fail;
+        curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, PyUnicode_AsUTF8(encobj));
+        PyMapping_DelItemString(headersobj, "accept-encoding");
+        Py_DECREF(encobj);
+    }
+
+    PyObject *items = PyMapping_Items(headersobj);
+    if (!items)
+        goto fail;
+    if (!util_ensure_type(items, &PyList_Type, NULL))
+        goto fail;
+
+    for (int i = 0; i < PyList_GET_SIZE(items); ++i) {
+        const char *key, *val;
+        if (!PyArg_ParseTuple(PyList_GET_ITEM(items, i), "ss", &key, &val))
+            goto fail;
+
+        char tmp[4096];
+        snprintf(tmp, 4096, "%s: %s", key, val);
+
+        struct curl_slist *tmplist = curl_slist_append(data->headers, tmp);
+        if (!tmplist)
+            goto fail;
+        data->headers = tmplist;
+    }
+
+    Py_DECREF(items);
+    return 0;
+
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, data->headers);
+
+    return 0;
+
+fail:
+    curl_slist_free_all(data->headers);
+    data->headers = NULL;
+    return -1;
+}
+
+static int
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
     /*
@@ -81,6 +168,8 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
      */
 
     if (_Curl_set_body(curl, PyObject_GetAttrString(prepreq, "body")) < 0)
+        return -1;
+    if (_Curl_set_headers(curl, PyObject_GetAttrString(prepreq, "headers")) < 0)
         return -1;
     if (_Curl_set_url(curl, PyObject_GetAttrString(prepreq, "url")) < 0)
         return -1;
@@ -481,7 +570,7 @@ static void
 CurlEasyAdapter_Dealloc(PyObject *_self)
 {
     CurlEasyAdapter *self = (CurlEasyAdapter *)_self;
-    curl_easy_cleanup(self->curl);
+    _Curl_free(self->curl);
     Py_TYPE(self)->tp_free(self);
 }
 
