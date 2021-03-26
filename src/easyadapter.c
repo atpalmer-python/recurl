@@ -34,6 +34,18 @@ _Curl_get_effective_url(CURL *curl)
 }
 
 static int
+_Curl_set_body(CURL *curl, PyObject *bodyobj)
+{
+    if (!util_has_value(bodyobj))
+        return 0;
+    if (!util_ensure_type(bodyobj, &PyUnicode_Type, "body"))
+        return -1;
+    const char *body = PyUnicode_AsUTF8(bodyobj);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
+    return 0;
+}
+
+static int
 _Curl_set_method(CURL *curl, PyObject *methodobj)
 {
     if (!util_ensure_type(methodobj, &PyUnicode_Type, "method"))
@@ -58,7 +70,8 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
      * - url
      */
 
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, RequestsMod_PreparedRequest_body(prepreq));
+    if (_Curl_set_body(curl, PyObject_GetAttrString(prepreq, "body")) < 0)
+        return -1;
 
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 

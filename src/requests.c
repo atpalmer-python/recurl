@@ -96,14 +96,3 @@ RequestsMod_PreparedRequest_url(PyObject *request)
     return PyUnicode_AsUTF8(urlobj);
 }
 
-const char *
-RequestsMod_PreparedRequest_body(PyObject *request)
-{
-    PyObject *obj = PyObject_GetAttrString(request, "body");
-    if (!obj)
-        return NULL;
-    if (!PyUnicode_Check(obj))
-        return NULL;
-    return PyUnicode_AsUTF8(obj);
-}
-
