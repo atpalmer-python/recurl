@@ -85,14 +85,3 @@ RequestsMod_get_encoding_from_headers(PyObject *headers)
     return PyObject_CallOneArg(func, headers);
 }
 
-const char *
-RequestsMod_PreparedRequest_url(PyObject *request)
-{
-    PyObject *urlobj = PyObject_GetAttrString(request, "url");
-    if (!urlobj)
-        return NULL;
-    if (!PyUnicode_Check(urlobj))
-        return NULL;
-    return PyUnicode_AsUTF8(urlobj);
-}
-
