@@ -146,12 +146,8 @@ _Curl_set_http_version(CURL *curl, PyObject *http_version)
 {
     if (!util_has_value(http_version))
         return 0;
-    if (!PyUnicode_Check(http_version)) {
-        PyErr_Format(PyExc_TypeError,
-            "http_version must be of type 'str', not '%s'\n",
-            Py_TYPE(http_version)->tp_name);
+    if (!util_ensure_type(http_version, &PyUnicode_Type, "http_version"))
         return -1;
-    }
 
     const char *verstr = PyUnicode_AsUTF8(http_version);
 
@@ -182,13 +178,8 @@ _Curl_set_maxconnects(CURL *curl, PyObject *maxconnects)
 {
     if (!util_has_value(maxconnects))
         return 0;
-
-    if (!PyLong_Check(maxconnects)) {
-        PyErr_Format(PyExc_TypeError,
-            "maxconnects must be of type 'int', not '%s'\n",
-            Py_TYPE(maxconnects)->tp_name);
+    if (!util_ensure_type(maxconnects, &PyLong_Type, "maxconnects"))
         return -1;
-    }
 
     long val = PyLong_AsLong(maxconnects);
     curl_easy_setopt(curl, CURLOPT_MAXCONNECTS, val);

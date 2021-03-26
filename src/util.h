@@ -7,6 +7,8 @@ const char *util_skip_linearwhitespace(const char *p);
 
 int util_has_value(PyObject *o);
 
+PyObject *util_ensure_type(PyObject *o, PyTypeObject *tp, const char *name);
+
 PyObject *util_Py_None_New(void);
 PyObject *util_or_Py_None(PyObject *o);
 PyObject *util_incref(PyObject *o);

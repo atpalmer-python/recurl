@@ -19,6 +19,21 @@ util_has_value(PyObject *o)
 }
 
 PyObject *
+util_ensure_type(PyObject *o, PyTypeObject *tp, const char *name)
+{
+    if (PyObject_IsInstance(o, (PyObject *)tp))
+        return o;
+
+    PyErr_Format(PyExc_TypeError,
+        "%s must be of type '%s', not '%s'\n",
+        name,
+        tp->tp_name,
+        Py_TYPE(o)->tp_name);
+
+    return NULL;
+}
+
+PyObject *
 util_Py_None_New(void)
 {
     Py_RETURN_NONE;
