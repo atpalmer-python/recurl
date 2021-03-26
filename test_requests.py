@@ -68,22 +68,19 @@ def test_get():
 def test_post():
     response = requests_curl.post('https://httpbin.org/post', data={'val1': 4, 'val2': 2})
     data = response.json()
-    # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
-    assert data['form'] == {}  # currently 'data' is not sent
+    assert data['form'] == {'val1': '4', 'val2': '2'}
 
 
 def test_put():
     response = requests_curl.put('https://httpbin.org/put', data={'val1': 4, 'val2': 2})
     data = response.json()
-    # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
-    assert data['form'] == {}  # currently 'data' is not sent
+    assert data['form'] == {'val1': '4', 'val2': '2'}
 
 
 def test_patch():
     response = requests_curl.patch('https://httpbin.org/patch', data={'val1': 4, 'val2': 2})
     data = response.json()
-    # assert data['form'] == {'val1': '4', 'val2': '2'}  # TODO!
-    assert data['form'] == {}  # currently 'data' is not sent
+    assert data['form'] == {'val1': '4', 'val2': '2'}
 
 
 def test_delete():

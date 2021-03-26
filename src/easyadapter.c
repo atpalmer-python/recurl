@@ -54,6 +54,8 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
      * - url
      */
 
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, RequestsMod_PreparedRequest_body(prepreq));
+
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 
     _Curl_set_method(curl, RequestsMod_PreparedRequest_method(prepreq));
