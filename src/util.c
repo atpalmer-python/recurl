@@ -21,6 +21,16 @@ util_has_value(PyObject *o)
 PyObject *
 util_ensure_type(PyObject *o, PyTypeObject *tp, const char *name)
 {
+    if (!o) {
+        if (PyErr_Occurred())
+            return NULL;
+        PyErr_Format(PyExc_SystemError,
+            "Missing value for %s. Expected '%s'.\n",
+            name,
+            tp->tp_name);
+        return NULL;
+    }
+
     if (PyObject_IsInstance(o, (PyObject *)tp))
         return o;
 
