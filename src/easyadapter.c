@@ -3,6 +3,7 @@
 #include "requests.h"
 #include "easyadapter.h"
 #include "util.h"
+#include "constants.h"
 
 static CURLcode
 _Curl_invoke(CURL *curl)
@@ -263,10 +264,8 @@ _header_fields_to_dict(PyObject *fieldbytes)
 
         if (PyMapping_HasKey(headerdict, key)) {
             PyObject *existing_val = PyObject_GetItem(headerdict, key);
-            PyObject *comma = PyUnicode_FromString(", ");
-            PyObject *tmp = PyUnicode_Concat(existing_val, comma);
+            PyObject *tmp = PyUnicode_Concat(existing_val, ConstantUnicodeComma);
             Py_DECREF(existing_val);
-            Py_DECREF(comma);
             PyObject *newvalue = PyUnicode_Concat(tmp, value);
             Py_DECREF(tmp);
             Py_DECREF(value);

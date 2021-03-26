@@ -1,15 +1,13 @@
 #include <Python.h>
 #include "easyadapter.h"
 #include "requests.h"
+#include "constants.h"
 
 static PyObject *
 _CurlEasySession(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     PyObject *adapter = NULL;
     PyObject *session = NULL;
-    PyObject *mount = NULL;
-    PyObject *http = NULL;
-    PyObject *https = NULL;
     PyObject *mresult = NULL;
 
     adapter = CurlEasyAdapter_New(kwargs);
@@ -19,40 +17,23 @@ _CurlEasySession(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!session)
         goto fail;
 
-    mount = PyUnicode_FromString("mount");
-    if (!mount)
-        goto fail;
-    http = PyUnicode_FromString("http://");
-    if (!http)
-        goto fail;
-    https = PyUnicode_FromString("https://");
-    if (!https)
-        goto fail;
-
-    PyObject *httpsargs[] = {session, https, adapter};
-    mresult = PyObject_VectorcallMethod(mount, httpsargs, 3, NULL);
+    PyObject *httpsargs[] = {session, ConstantUnicodeHTTPS, adapter};
+    mresult = PyObject_VectorcallMethod(ConstantUnicode_mount, httpsargs, 3, NULL);
     if (!mresult)
         goto fail;
     Py_DECREF(mresult);
 
-    PyObject *httpargs[] = {session, http, adapter};
-    mresult = PyObject_VectorcallMethod(mount, httpargs, 3, NULL);
+    PyObject *httpargs[] = {session, ConstantUnicodeHTTP, adapter};
+    mresult = PyObject_VectorcallMethod(ConstantUnicode_mount, httpargs, 3, NULL);
     if (!mresult)
         goto fail;
     Py_DECREF(mresult);
-
-    Py_DECREF(mount);
-    Py_DECREF(http);
-    Py_DECREF(https);
 
     return session;
 
 fail:
     Py_XDECREF(adapter);
     Py_XDECREF(session);
-    Py_XDECREF(mount);
-    Py_XDECREF(http);
-    Py_XDECREF(https);
     return NULL;
 }
 
@@ -134,12 +115,20 @@ static PyMethodDef methods[] = {
     {0},
 };
 
+static void
+_free(void *self)
+{
+    Constants_Free();
+    Py_DECREF(self);
+}
+
 struct PyModuleDef module_def = {
     .m_base = PyModuleDef_HEAD_INIT,
     .m_name = "requests_curl",
     .m_doc = "",
     .m_size = 0,
     .m_methods = methods,
+    .m_free = _free,
 };
 
 PyMODINIT_FUNC
@@ -153,6 +142,9 @@ PyInit_requests_curl(void)
         goto fail;
     Py_INCREF(&CurlEasyAdapter_Type);
     PyModule_AddObject(module, CurlEasyAdapter_Type.tp_name, (PyObject *)&CurlEasyAdapter_Type);
+
+    if (Constants_Init() < 0)
+        goto fail;
 
     return module;
 
