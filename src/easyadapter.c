@@ -33,15 +33,16 @@ _Curl_get_effective_url(CURL *curl)
     return PyUnicode_FromString(result);
 }
 
-static void
+static int
 _Curl_set_method(CURL *curl, const char *method)
 {
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
     curl_easy_setopt(curl, CURLOPT_HTTPGET, strcmp(method, "GET") == 0);
     curl_easy_setopt(curl, CURLOPT_NOBODY, strcmp(method, "HEAD") == 0);
+    return 0;
 }
 
-static void
+static int
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
     /*
@@ -58,7 +59,10 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 
     curl_easy_setopt(curl, CURLOPT_URL, RequestsMod_PreparedRequest_url(prepreq));
 
-    _Curl_set_method(curl, RequestsMod_PreparedRequest_method(prepreq));
+    if (_Curl_set_method(curl, RequestsMod_PreparedRequest_method(prepreq)) < 0)
+        return -1;
+
+    return 0;
 }
 
 static int
@@ -315,8 +319,8 @@ _Curl_send(CURL *curl, struct send_args *args)
     PyObject *headers = NULL;
     PyObject *body = NULL;
 
-    _Curl_apply_PreparedRequest(curl, args->request);
-
+    if (_Curl_apply_PreparedRequest(curl, args->request) < 0)
+        return NULL;
     if (_Curl_set_timeout(curl, args->timeout) < 0)
         return NULL;
     if (_Curl_set_verify(curl, args->verify) < 0)
