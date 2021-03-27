@@ -67,10 +67,14 @@ _Curl_get_effective_url(CURL *curl)
 static int
 _Curl_set_body(CURL *curl, PyObject *bodyobj)
 {
-    if (!util_has_value(bodyobj))
+    if (!util_has_value(bodyobj)) {
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
         return 0;
+    }
+
     if (!util_ensure_type(bodyobj, &PyUnicode_Type, "body"))
         return -1;
+
     const char *body = PyUnicode_AsUTF8(bodyobj);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body);
     return 0;
