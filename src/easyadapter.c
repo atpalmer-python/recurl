@@ -157,15 +157,7 @@ fail:
 static int
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
-    /*
-     * PreparedRequest properties:
-     * - body       // done
-     * - headers    // done
-     * - hooks      // TODO
-     * - method     // done
-     * - path_url   // ok; curl only needs full URL
-     * - url        // done
-     */
+    /* TODO: handle PreparedRequest.hooks */
 
     if (_Curl_set_body(curl, PyObject_GetAttrString(prepreq, "body")) < 0)
         return -1;
@@ -472,6 +464,8 @@ _Curl_send(CURL *curl, struct send_args *args)
     if (_Curl_set_proxy(curl, PyObject_GetAttrString(args->request, "url"), args->proxies) < 0)
         return NULL;
 
+    /* TODO: handle "stream" parameter (args->stream) */
+
     _Curl_set_buffers(curl, &headers, &body);
 
     if (_Curl_invoke(curl) != CURLE_OK)
@@ -508,13 +502,7 @@ CurlEasyAdapter_send(PyObject *_self, PyObject *args, PyObject *kwargs)
     struct send_args send_args = {0};
 
     char *kwlist[] = {
-        "request",      /* partial impl */
-        "stream",       /* TODO */
-        "timeout",      /* done */
-        "verify",       /* done */
-        "cert",         /* done */
-        "proxies",      /* TODO */
-        NULL
+        "request", "stream", "timeout", "verify", "cert", "proxies", NULL
     };
 
     if (PyArg_ParseTupleAndKeywords(args, kwargs, "O|OOOOO", kwlist,
