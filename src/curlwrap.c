@@ -292,8 +292,10 @@ _Curl_set_proxy(CURL *curl, PyObject *url, PyObject *proxies)
         return 0;
     }
 
-    if (!util_has_value(url))
+    if (!util_has_value(url)) {
+        PyErr_SetString(PyExc_SystemError, "url argument must be set");
         return -1;
+    }
 
     PyObject *proxy = RequestsMod_select_proxy(url, proxies);
     if (!proxy)
@@ -474,12 +476,6 @@ _parse_response_headers(PyObject *headerbytes, PyObject **reason)
 PyObject *
 CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
 {
-    PyObject *headers = NULL;
-    PyObject *body = NULL;
-
-    if (!args->request)
-        return NULL;
-
     if (_Curl_apply_PreparedRequest(curl, args->request) < 0)
         return NULL;
     if (_Curl_set_timeout(curl, args->timeout) < 0)
@@ -492,6 +488,9 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
         return NULL;
 
     /* TODO: handle "stream" parameter (args->stream) */
+
+    PyObject *headers = NULL;
+    PyObject *body = NULL;
 
     _Curl_set_buffers(curl, &headers, &body);
 
