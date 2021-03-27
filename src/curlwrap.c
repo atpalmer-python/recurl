@@ -146,10 +146,8 @@ _Curl_set_headers(CURL *curl, PyObject *headersobj)
     }
 
     Py_DECREF(items);
-    return 0;
 
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, data->headers);
-
     return 0;
 
 fail:

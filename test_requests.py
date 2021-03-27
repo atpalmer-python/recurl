@@ -88,6 +88,12 @@ def test_delete():
     assert response.ok
 
 
+def test_headers():
+    response = requests_curl.get('https://httpbin.org/anything', headers={'x-myheader': 'some-value'})
+    data = response.json()
+    assert requests.structures.CaseInsensitiveDict(data['headers']).get('x-myheader') == 'some-value'
+
+
 def test_timeout():
     with pytest.raises(Exception):  # TODO: ReadTimeout
         requests_curl.get('https://httpbin.org/delay/2', timeout=1)
