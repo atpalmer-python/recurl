@@ -173,26 +173,33 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
     return 0;
 }
 
+static void
+_set_timeout_opts(CURL *curl, double timeout, double connecttimeout)
+{
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(timeout * 1000.0));
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)(connecttimeout * 1000.0));
+}
+
 static int
 _Curl_set_timeout(CURL *curl, PyObject *timeout)
 {
-    if (!util_has_value(timeout))
+    if (!util_has_value(timeout)) {
+        _set_timeout_opts(curl, 0.0, 0.0);
         return 0;
+    }
 
     if (PyNumber_Check(timeout)) {
-        double to = PyFloat_AsDouble(timeout);
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(to * 1000.0));
+        _set_timeout_opts(curl, PyFloat_AsDouble(timeout), 0.0);
         return 0;
     }
 
     if (PyTuple_Check(timeout)) {
         double connto, readto;
         if (!PyArg_ParseTuple(timeout, "dd", &connto, &readto)) {
-            PyErr_SetString(PyExc_TypeError, "Invalid timeout argument");
+            PyErr_SetString(PyExc_ValueError, "Invalid timeout argument");
             return -1;
         }
-        curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)(connto * 1000.0));
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)(readto * 1000.0));
+        _set_timeout_opts(curl, readto, connto);
         return 0;
     }
 
@@ -475,7 +482,7 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
 
     if (_Curl_apply_PreparedRequest(curl, args->request) < 0)
         return NULL;
-    if (_Curl_set_timeout(curl, args->timeout) < 0)  /* TODO: reset each call */
+    if (_Curl_set_timeout(curl, args->timeout) < 0)
         return NULL;
     if (_Curl_set_verify(curl, args->verify) < 0)
         return NULL;

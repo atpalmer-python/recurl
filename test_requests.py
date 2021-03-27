@@ -91,6 +91,8 @@ def test_delete():
 def test_timeout():
     with pytest.raises(Exception):  # TODO: ReadTimeout
         requests_curl.get('https://httpbin.org/delay/2', timeout=1)
+    response = requests_curl.get('https://httpbin.org/delay/2')
+    assert response.ok
 
 
 def test_timeout_tuple():
