@@ -218,35 +218,48 @@ _Curl_set_verify(CURL *curl, PyObject *verify)
     return -1;
 }
 
+static void
+_set_cert_opts(CURL *curl, const char *cert, const char *key, const char *pw)
+{
+    curl_easy_setopt(curl, CURLOPT_SSLCERT, cert);
+    curl_easy_setopt(curl, CURLOPT_SSLKEY, key);
+    curl_easy_setopt(curl, CURLOPT_KEYPASSWD, pw);
+}
+
 static int
 _Curl_set_cert(CURL *curl, PyObject *certobj)
 {
-    if (!util_has_value(certobj))
+    if (!util_has_value(certobj)) {
+        _set_cert_opts(curl, NULL, NULL, NULL);
         return 0;
+    }
 
     if (PyUnicode_Check(certobj)) {
-        curl_easy_setopt(curl, CURLOPT_SSLCERT, PyUnicode_AsUTF8(certobj));
+        _set_cert_opts(curl, PyUnicode_AsUTF8(certobj), NULL, NULL);
         return 0;
     }
 
     if (PyTuple_Check(certobj)) {
-        const char *cert;
-        const char *key;
+        const char *cert = NULL;
+        const char *key = NULL;
         if (!PyArg_ParseTuple(certobj, "ss", &cert, &key)) {
             PyErr_SetString(PyExc_TypeError, "Invalid cert argument");
             return -1;
         }
-        curl_easy_setopt(curl, CURLOPT_SSLCERT, cert);
-        curl_easy_setopt(curl, CURLOPT_SSLKEY, key);
+        _set_cert_opts(curl, cert, key, NULL);
         return 0;
     }
 
-    /* TODO: extend API for key password?
-     * curl_easy_setopt(curl, CURLOPT_KEYPASSWD, ???);
+    /* TODO: Extend API...
+     * add CURLOPT_KEYPASSWD in 3-tuple? (or dict)
      * See also: https://github.com/psf/requests/issues/1573
      *
-     * Extend API for cert "blobs"? cert types? proxy certs?
-     * SSL versions? OpenSSL engines? etc., etc.
+     * Allow PyBytes object to provide literal cert "blob"?
+     * CURLOPT_SSLCERT_BLOB, CURLOPT_SSLKEY_BLOB
+     *
+     * Proxy certificates?
+     *
+     * cert types? SSL versions? OpenSSL engines? etc., etc.
      */
 
     PyErr_SetString(PyExc_TypeError, "Invalid cert argument");
@@ -455,7 +468,7 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
         return NULL;
     if (_Curl_set_verify(curl, args->verify) < 0)  /* TODO: reset each call */
         return NULL;
-    if (_Curl_set_cert(curl, args->cert) < 0)  /* TODO: reset each call */
+    if (_Curl_set_cert(curl, args->cert) < 0)
         return NULL;
     if (_Curl_set_proxy(curl, PyObject_GetAttrString(args->request, "url"), args->proxies) < 0)
         return NULL;

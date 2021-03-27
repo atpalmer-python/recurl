@@ -104,3 +104,10 @@ def test_proxy():
     response = requests_curl.get('https://www.google.com/')
     assert response.ok
 
+
+def test_cert():
+    with pytest.raises(Exception):  # TODO: OSError
+        requests_curl.get('https://www.google.com/', cert='/badcert')
+    response = requests_curl.get('https://www.google.com/')
+    assert response.ok
+
