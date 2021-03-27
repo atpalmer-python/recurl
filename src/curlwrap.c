@@ -200,17 +200,28 @@ _Curl_set_timeout(CURL *curl, PyObject *timeout)
     return -1;
 }
 
+static void
+_set_verify_opts(CURL *curl, long verifypeer, const char *cainfo)
+{
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifypeer);
+    curl_easy_setopt(curl, CURLOPT_CAINFO, cainfo);
+}
+
 static int
 _Curl_set_verify(CURL *curl, PyObject *verify)
 {
+    if (!util_has_value(verify)) {
+        _set_verify_opts(curl, 1L, NULL);
+        return 0;
+    }
+
     if (PyBool_Check(verify)) {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verify == Py_True);
+        _set_verify_opts(curl, verify == Py_True, NULL);
         return 0;
     }
 
     if (PyUnicode_Check(verify)) {
-        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
-        curl_easy_setopt(curl, CURLOPT_CAINFO, PyUnicode_AsUTF8(verify));
+        _set_verify_opts(curl, 1L, PyUnicode_AsUTF8(verify));
         return 0;
     }
 
@@ -466,7 +477,7 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
         return NULL;
     if (_Curl_set_timeout(curl, args->timeout) < 0)  /* TODO: reset each call */
         return NULL;
-    if (_Curl_set_verify(curl, args->verify) < 0)  /* TODO: reset each call */
+    if (_Curl_set_verify(curl, args->verify) < 0)
         return NULL;
     if (_Curl_set_cert(curl, args->cert) < 0)
         return NULL;
