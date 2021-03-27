@@ -159,12 +159,12 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
     /*
      * PreparedRequest properties:
-     * - body
-     * - headers
-     * - hooks
-     * - method
-     * - path_url
-     * - url
+     * - body       // done
+     * - headers    // done
+     * - hooks      // TODO
+     * - method     // done
+     * - path_url   // ok; curl only needs full URL
+     * - url        // done
      */
 
     if (_Curl_set_body(curl, PyObject_GetAttrString(prepreq, "body")) < 0)
