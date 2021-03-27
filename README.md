@@ -37,7 +37,6 @@ print(response.ok)
 
 # TODO
 
-* Read off all PreparedRequest attributes (headers, etc.)
 * Cookies/CookieJars
 * Exceptions
 * Streaming downloads
@@ -45,7 +44,6 @@ print(response.ok)
 * History
 * Links
 * Hooks
-* Proxies
 * Parse HTTP line continuations
 * Audit API vs. requests
 * Extend API for CURL-specific features?
