@@ -159,6 +159,8 @@ _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
     /* TODO: handle PreparedRequest.hooks */
 
+    /* TODO: reset each call */
+
     if (_Curl_set_body(curl, PyObject_GetAttrString(prepreq, "body")) < 0)
         return -1;
     if (_Curl_set_headers(curl, PyObject_GetAttrString(prepreq, "headers")) < 0)
@@ -449,11 +451,11 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
 
     if (_Curl_apply_PreparedRequest(curl, args->request) < 0)
         return NULL;
-    if (_Curl_set_timeout(curl, args->timeout) < 0)
+    if (_Curl_set_timeout(curl, args->timeout) < 0)  /* TODO: reset each call */
         return NULL;
-    if (_Curl_set_verify(curl, args->verify) < 0)
+    if (_Curl_set_verify(curl, args->verify) < 0)  /* TODO: reset each call */
         return NULL;
-    if (_Curl_set_cert(curl, args->cert) < 0)
+    if (_Curl_set_cert(curl, args->cert) < 0)  /* TODO: reset each call */
         return NULL;
     if (_Curl_set_proxy(curl, PyObject_GetAttrString(args->request, "url"), args->proxies) < 0)
         return NULL;
