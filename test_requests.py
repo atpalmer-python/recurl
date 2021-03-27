@@ -97,3 +97,8 @@ def test_timeout_tuple():
     with pytest.raises(Exception):  # TODO: ReadTimeout
         requests_curl.get('https://httpbin.org/delay/2', timeout=(1, 1))
 
+
+def test_proxy():
+    with pytest.raises(Exception):  # TODO: ConnectionError
+        requests_curl.get('https://www.google.com/', proxies={'https': 'http://proxy.google.com:8080'})
+

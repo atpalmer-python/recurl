@@ -85,3 +85,16 @@ RequestsMod_get_encoding_from_headers(PyObject *headers)
     return PyObject_CallOneArg(func, headers);
 }
 
+PyObject *
+RequestsMod_select_proxy(PyObject *url, PyObject *proxies)
+{
+    if (!url)
+        return NULL;
+    if (!proxies)
+        return NULL;
+    PyObject *func = _import_obj("requests.utils", "select_proxy");
+    if (!func)
+        return NULL;
+    return PyObject_CallFunctionObjArgs(func, url, proxies, NULL);
+}
+

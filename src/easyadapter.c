@@ -260,6 +260,31 @@ _Curl_set_cert(CURL *curl, PyObject *certobj)
 }
 
 static int
+_Curl_set_proxy(CURL *curl, PyObject *url, PyObject *proxies)
+{
+    /* no url is an error; no proxies is OK to pass silently */
+    if (!util_has_value(url))
+        return -1;
+    if (!util_has_value(proxies))
+        return 0;
+
+    PyObject *proxy = RequestsMod_select_proxy(url, proxies);
+    if (!proxy)
+        return -1;
+    if (proxy == Py_None) {
+        Py_DECREF(proxy);
+        return 0;
+    }
+
+    if (!util_ensure_type(proxy, &PyUnicode_Type, "proxy"))
+        return -1;
+
+    curl_easy_setopt(curl, CURLOPT_PROXY, PyUnicode_AsUTF8(proxy));
+    return 0;
+}
+
+
+static int
 _Curl_set_http_version(CURL *curl, PyObject *http_version)
 {
     if (!util_has_value(http_version))
@@ -433,6 +458,9 @@ _Curl_send(CURL *curl, struct send_args *args)
     PyObject *headers = NULL;
     PyObject *body = NULL;
 
+    if (!args->request)
+        return NULL;
+
     if (_Curl_apply_PreparedRequest(curl, args->request) < 0)
         return NULL;
     if (_Curl_set_timeout(curl, args->timeout) < 0)
@@ -440,6 +468,8 @@ _Curl_send(CURL *curl, struct send_args *args)
     if (_Curl_set_verify(curl, args->verify) < 0)
         return NULL;
     if (_Curl_set_cert(curl, args->cert) < 0)
+        return NULL;
+    if (_Curl_set_proxy(curl, PyObject_GetAttrString(args->request, "url"), args->proxies) < 0)
         return NULL;
 
     _Curl_set_buffers(curl, &headers, &body);
