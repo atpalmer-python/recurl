@@ -528,19 +528,17 @@ PyMethodDef methods[] = {
     {0},
 };
 
-static PyObject *
-_CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
+CURL *
+_Curl_new(PyObject *kwargs)
 {
-    /*
-     * requests HTTPAdapter supported arguments:
+    /* requests HTTPAdapter supported arguments:
      * - pool_connections
      * - pool_maxsize
      * - max_retries
      * - pool_block
      */
 
-    /*
-     * CURLOPTs to possibly support:
+    /* CURLOPTs to possibly support:
      * - DNS_SERVERS
      * - DNS_CACHE_TIMEOUT
      * - VERBOSE
@@ -560,12 +558,31 @@ _CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
 
     util_pick_off_keywords(kwargs, kwlist, &http_version, &maxconnects);
 
-    CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
-    new->curl = curl_easy_init();
-
-    if (_Curl_set_http_version(new->curl, http_version) < 0)
+    CURL *curl = curl_easy_init();
+    if (!curl)
         goto fail;
-    if (_Curl_set_maxconnects(new->curl, maxconnects) < 0)
+
+    if (_Curl_set_http_version(curl, http_version) < 0)
+        goto fail;
+    if (_Curl_set_maxconnects(curl, maxconnects) < 0)
+        goto fail;
+
+    return curl;
+
+fail:
+    curl_easy_cleanup(curl);
+    return NULL;
+}
+
+static PyObject *
+_CurlEasyAdapter_New(PyTypeObject *tp, PyObject *args, PyObject *kwargs)
+{
+    CurlEasyAdapter *new = (CurlEasyAdapter *)tp->tp_alloc(tp, 0);
+    if (!new)
+        return NULL;
+
+    new->curl = _Curl_new(kwargs);
+    if (!new->curl)
         goto fail;
 
     return (PyObject *)new;
