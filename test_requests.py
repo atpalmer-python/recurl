@@ -101,4 +101,6 @@ def test_timeout_tuple():
 def test_proxy():
     with pytest.raises(Exception):  # TODO: ConnectionError
         requests_curl.get('https://www.google.com/', proxies={'https': 'http://proxy.google.com:8080'})
+    response = requests_curl.get('https://www.google.com/')
+    assert response.ok
 

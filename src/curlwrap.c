@@ -254,16 +254,19 @@ _Curl_set_cert(CURL *curl, PyObject *certobj)
 static int
 _Curl_set_proxy(CURL *curl, PyObject *url, PyObject *proxies)
 {
-    /* no url is an error; no proxies is OK to pass silently */
+    if (!util_has_value(proxies)) {
+        curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
+        return 0;
+    }
+
     if (!util_has_value(url))
         return -1;
-    if (!util_has_value(proxies))
-        return 0;
 
     PyObject *proxy = RequestsMod_select_proxy(url, proxies);
     if (!proxy)
         return -1;
     if (proxy == Py_None) {
+        curl_easy_setopt(curl, CURLOPT_PROXY, NULL);
         Py_DECREF(proxy);
         return 0;
     }
