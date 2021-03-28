@@ -1,7 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-extern PyObject *ConstantUnicodeComma;
 extern PyObject *ConstantUnicodeHTTP;
 extern PyObject *ConstantUnicodeHTTPS;
 extern PyObject *ConstantUnicode_mount;

@@ -1,7 +1,6 @@
 #include <Python.h>
 #include "constants.h"
 
-PyObject *ConstantUnicodeComma = NULL;
 PyObject *ConstantUnicodeHTTP = NULL;
 PyObject *ConstantUnicodeHTTPS = NULL;
 PyObject *ConstantUnicode_mount = NULL;
@@ -9,12 +8,6 @@ PyObject *ConstantUnicode_mount = NULL;
 int
 Constants_Init(void)
 {
-    ConstantUnicodeComma = PyUnicode_FromString(", ");
-    if (!ConstantUnicodeComma) {
-        Constants_Free();
-        return -1;
-    }
-
     ConstantUnicodeHTTP = PyUnicode_FromString("http://");
     if (!ConstantUnicodeHTTP) {
         Constants_Free();
@@ -39,7 +32,6 @@ Constants_Init(void)
 void
 Constants_Free(void)
 {
-    Py_XDECREF(ConstantUnicodeComma);
     Py_XDECREF(ConstantUnicodeHTTP);
     Py_XDECREF(ConstantUnicodeHTTPS);
     Py_XDECREF(ConstantUnicode_mount);

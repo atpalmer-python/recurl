@@ -446,10 +446,9 @@ _header_fields_to_dict(PyObject *fieldbytes)
 
         if (PyMapping_HasKey(headerdict, key)) {
             PyObject *existing_val = PyObject_GetItem(headerdict, key);
-            PyObject *tmp = PyUnicode_Concat(existing_val, ConstantUnicodeComma);
+            PyObject *newvalue = PyUnicode_FromFormat(
+                "%s, %s", PyUnicode_AsUTF8(existing_val), PyUnicode_AsUTF8(value));
             Py_DECREF(existing_val);
-            PyObject *newvalue = PyUnicode_Concat(tmp, value);
-            Py_DECREF(tmp);
             Py_DECREF(value);
             value = newvalue;
         }
