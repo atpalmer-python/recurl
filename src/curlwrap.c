@@ -5,15 +5,15 @@
 #include "constants.h"
 #include "curlwrap.h"
 
-struct curl_private_data {
+struct _curl_private_data {
     /* not automatically freed by curl_easy_cleanup, so hold onto pointer */
     struct curl_slist *headers;
 };
 
-struct curl_private_data *
+struct _curl_private_data *
 _Curl_get_private_or_new(CURL *curl)
 {
-    struct curl_private_data *data = NULL;
+    struct _curl_private_data *data = NULL;
     curl_easy_getinfo(curl, CURLINFO_PRIVATE, &data);
     if (data)
         return data;
@@ -26,7 +26,7 @@ _Curl_get_private_or_new(CURL *curl)
 void
 CurlWrap_free(CURL *curl)
 {
-    struct curl_private_data *data = NULL;
+    struct _curl_private_data *data = NULL;
     curl_easy_getinfo(curl, CURLINFO_PRIVATE, &data);
     if (data) {
         curl_slist_free_all(data->headers);
@@ -102,16 +102,26 @@ _Curl_set_method(CURL *curl, PyObject *methodobj)
     return 0;
 }
 
+void
+_set_httpheader_opt(CURL *curl, struct curl_slist *headers)
+{
+    struct _curl_private_data *data = _Curl_get_private_or_new(curl);
+    data->headers = headers;
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, data->headers);
+}
+
 static int
 _Curl_set_headers(CURL *curl, PyObject *headersobj)
 {
-    if (!util_has_value(headersobj))
+    if (!util_has_value(headersobj)) {
+        _set_httpheader_opt(curl, NULL);
         return 0;
+    }
+
     if (!util_ensure_mapping(headersobj, "headers"))
         return -1;
 
-    struct curl_private_data *data = _Curl_get_private_or_new(curl);
-    data->headers = NULL;
+    struct curl_slist *headers = NULL;
 
     /* Accept-Encoding needs to be handled as a special case
      * for curl to automatically decompress the response.
@@ -132,27 +142,30 @@ _Curl_set_headers(CURL *curl, PyObject *headersobj)
         goto fail;
 
     for (int i = 0; i < PyList_GET_SIZE(items); ++i) {
-        const char *key, *val;
+        const char *key = NULL;
+        const char *val = NULL;
+
         if (!PyArg_ParseTuple(PyList_GET_ITEM(items, i), "ss", &key, &val))
             goto fail;
 
         char tmp[4096];
         snprintf(tmp, 4096, "%s: %s", key, val);
 
-        struct curl_slist *tmplist = curl_slist_append(data->headers, tmp);
-        if (!tmplist)
+        struct curl_slist *tmplist = curl_slist_append(headers, tmp);
+        if (!tmplist) {
+            PyErr_Format(PyExc_MemoryError, "libcurl could not set header: %s\n", tmp);
             goto fail;
-        data->headers = tmplist;
+        }
+        headers = tmplist;
     }
 
     Py_DECREF(items);
 
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, data->headers);
+    _set_httpheader_opt(curl, headers);
     return 0;
 
 fail:
-    curl_slist_free_all(data->headers);
-    data->headers = NULL;
+    curl_slist_free_all(headers);
     return -1;
 }
 
@@ -160,8 +173,6 @@ static int
 _Curl_apply_PreparedRequest(CURL *curl, PyObject *prepreq)
 {
     /* TODO: handle PreparedRequest.hooks */
-
-    /* TODO: reset each call */
 
     if (_Curl_set_body(curl, PyObject_GetAttrString(prepreq, "body")) < 0)
         return -1;
