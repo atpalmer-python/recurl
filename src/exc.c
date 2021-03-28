@@ -10,9 +10,9 @@ exc_set_from_CURLcode(CURLcode code, PyObject *request, PyObject *response)
     PyObject *exctype = NULL;
 
     switch (code) {
-
-    /* TODO: specific exception types per CURLcode */
-
+    case CURLE_COULDNT_RESOLVE_PROXY:  /* code 5 */
+        exctype = RequestsMod_exception("ProxyError");
+        break;
     default:
         exctype = RequestsMod_exception("RequestException");
         break;
