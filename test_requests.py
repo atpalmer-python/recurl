@@ -95,26 +95,26 @@ def test_headers():
 
 
 def test_timeout():
-    with pytest.raises(Exception):  # TODO: ReadTimeout
+    with pytest.raises(requests.exceptions.RequestException):  # TODO: ReadTimeout
         requests_curl.get('https://httpbin.org/delay/2', timeout=1)
     response = requests_curl.get('https://httpbin.org/delay/2')
     assert response.ok
 
 
 def test_timeout_tuple():
-    with pytest.raises(Exception):  # TODO: ReadTimeout
+    with pytest.raises(requests.exceptions.RequestException):  # TODO: ReadTimeout
         requests_curl.get('https://httpbin.org/delay/2', timeout=(1, 1))
 
 
 def test_proxy():
-    with pytest.raises(Exception):  # TODO: ConnectionError
+    with pytest.raises(requests.exceptions.RequestException):  # TODO: ConnectionError
         requests_curl.get('https://www.google.com/', proxies={'https': 'http://proxy.google.com:8080'})
     response = requests_curl.get('https://www.google.com/')
     assert response.ok
 
 
 def test_cert():
-    with pytest.raises(Exception):  # TODO: OSError
+    with pytest.raises(requests.exceptions.RequestException):  # TODO: OSError?
         requests_curl.get('https://www.google.com/', cert='/badcert')
     response = requests_curl.get('https://www.google.com/')
     assert response.ok

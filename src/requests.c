@@ -98,3 +98,8 @@ RequestsMod_select_proxy(PyObject *url, PyObject *proxies)
     return PyObject_CallFunctionObjArgs(func, url, proxies, NULL);
 }
 
+PyObject *
+RequestsMod_exception(const char *name)
+{
+    return _import_obj("requests.exceptions", name);
+}

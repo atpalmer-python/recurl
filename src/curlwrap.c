@@ -4,6 +4,7 @@
 #include "util.h"
 #include "constants.h"
 #include "curlwrap.h"
+#include "exc.h"
 
 struct _curl_private_data {
     /* not automatically freed by curl_easy_cleanup, so hold onto pointer */
@@ -34,18 +35,6 @@ CurlWrap_free(CURL *curl)
     }
 
     curl_easy_cleanup(curl);
-}
-
-static CURLcode
-_Curl_invoke(CURL *curl)
-{
-    CURLcode ecode = curl_easy_perform(curl);
-    if (ecode != CURLE_OK) {
-        /* TODO: raise specific exception types */
-        PyErr_Format(PyExc_Exception,
-            "CURL error (%d): %s", ecode, curl_easy_strerror(ecode));
-    }
-    return ecode;
 }
 
 static PyObject *
@@ -507,8 +496,12 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
 
     _Curl_set_buffers(curl, &headers, &body);
 
-    if (_Curl_invoke(curl) != CURLE_OK)
+    CURLcode code = curl_easy_perform(curl);
+    if (code != CURLE_OK) {
+        /* TODO: pass response when possible */
+        exc_set_from_CURLcode(code, args->request, Py_None);
         return NULL;
+    }
 
     PyObject *reason = NULL;
     PyObject *headerdict = _parse_response_headers(headers, &reason);

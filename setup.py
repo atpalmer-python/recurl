@@ -7,7 +7,7 @@ setup(
         Extension('requests_curl',
             sources=[
                 'src/module.c', 'src/easyadapter.c', 'src/requests.c', 'src/util.c',
-                'src/constants.c', 'src/curlwrap.c',
+                'src/constants.c', 'src/curlwrap.c', 'src/exc.c',
             ],
             libraries=['curl'],
         ),
