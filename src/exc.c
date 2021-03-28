@@ -1,24 +1,6 @@
 #include <curl/curl.h>
 #include "requests.h"
-
-/* TODO: move to util */
-PyObject *
-util_obj_BuildAttrString(PyObject *o, const char *name, const char *fmt, ...)
-{
-    va_list va;
-    va_start(va, fmt);
-    PyObject *value = Py_VaBuildValue(fmt, va);
-    va_end(va);
-
-    if (!value)
-        return NULL;
-
-    PyObject *result = PyObject_SetAttrString(o, name, value);
-
-    Py_DECREF(value);
-
-    return result;
-}
+#include "util.h"
 
 static PyObject *
 _exctype_from_CURLcode(CURLcode code)
@@ -51,9 +33,11 @@ _excobj_new(PyObject *exctype, CURLcode code, const char *errorbuffer, PyObject 
     msg = PyUnicode_FromFormat("%s (CURLcode: %ld)", curl_easy_strerror(code), code);
     if (!msg)
         goto out;
+
     args = Py_BuildValue("(O)", msg);
     if (!args)
         goto out;
+
     kwargs = Py_BuildValue("{s:O, s:O}", "request", request, "response", response);
     if (!kwargs)
         goto out;

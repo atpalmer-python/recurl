@@ -79,6 +79,22 @@ util_incref(PyObject *o)
     return o;
 }
 
+int
+util_obj_BuildAttrString(PyObject *o, const char *name, const char *fmt, ...)
+{
+    va_list va;
+    va_start(va, fmt);
+    PyObject *value = Py_VaBuildValue(fmt, va);
+    va_end(va);
+
+    if (!value)
+        return -1;
+
+    int result = PyObject_SetAttrString(o, name, value);
+    Py_DECREF(value);
+    return result;
+}
+
 PyObject *
 util_dict_pop(PyObject *dict, const char *key)
 {

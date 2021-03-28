@@ -14,6 +14,8 @@ PyObject *util_Py_None_New(void);
 PyObject *util_or_Py_None(PyObject *o);
 PyObject *util_incref(PyObject *o);
 
+int util_obj_BuildAttrString(PyObject *o, const char *name, const char *fmt, ...);
+
 PyObject *util_dict_pop(PyObject *dict, const char *key);
 PyObject *util_pick_off_keywords(PyObject *kwargs, const char *kwlist[], ...);
 
