@@ -8,14 +8,20 @@ _exctype_from_CURLcode(CURLcode code)
     PyObject *exctype = NULL;
 
     switch (code) {
-    case CURLE_COULDNT_RESOLVE_PROXY:  /* code 5 */
-        exctype = RequestsMod_exception("ProxyError");  /* extends ConnectionError */
+    case CURLE_COULDNT_RESOLVE_PROXY:   /* code 5 */
+        exctype = RequestsMod_exception("ProxyError");          /* extends ConnectionError */
         break;
-    case CURLE_COULDNT_RESOLVE_HOST:  /* code 6 */
-        exctype = RequestsMod_exception("ConnectionError");  /* extends RequestException */
+    case CURLE_COULDNT_RESOLVE_HOST:    /* code 6 */
+        exctype = RequestsMod_exception("ConnectionError");     /* extends RequestException */
+        break;
+    case CURLE_OPERATION_TIMEDOUT:      /* code 28 */
+        /* NOTE: libcurl does not provide separate error codes
+         * corresponding to requests's ConnectTimeout and ReadTimeout.
+         * Always raise generic Timeout. */
+        exctype = RequestsMod_exception("Timeout");             /* extends RequestException */
         break;
     default:
-        exctype = RequestsMod_exception("RequestException");  /* extends IOError */
+        exctype = RequestsMod_exception("RequestException");    /* extends IOError */
         break;
     }
 

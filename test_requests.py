@@ -102,14 +102,20 @@ def test_headers():
 
 
 def test_timeout():
-    with pytest.raises(requests.exceptions.RequestException):  # TODO: ReadTimeout
+    '''
+    NOTE:
+    libcurl does not provide separate error codes corresponding
+    to requests's ConnectionTimeout and ReadTimeout.
+    We can only catch the generic Timeout exception.
+    '''
+    with pytest.raises(requests.exceptions.Timeout):
         requests_curl.get('https://httpbin.org/delay/2', timeout=1)
     response = requests_curl.get('https://httpbin.org/delay/2')
     assert response.ok
 
 
 def test_timeout_tuple():
-    with pytest.raises(requests.exceptions.RequestException):  # TODO: ReadTimeout
+    with pytest.raises(requests.exceptions.Timeout):
         requests_curl.get('https://httpbin.org/delay/2', timeout=(1, 1))
 
 
