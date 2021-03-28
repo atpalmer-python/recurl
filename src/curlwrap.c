@@ -9,6 +9,8 @@
 struct _curl_private_data {
     /* not automatically freed by curl_easy_cleanup, so hold onto pointer */
     struct curl_slist *headers;
+
+    char errorbuffer[CURL_ERROR_SIZE];
 };
 
 struct _curl_private_data *
@@ -22,6 +24,26 @@ _Curl_get_private_or_new(CURL *curl)
     data = PyMem_Calloc(sizeof *data, 1);
     curl_easy_setopt(curl, CURLOPT_PRIVATE, data);
     return data;
+}
+
+int
+_Curl_init_errorbuffer(CURL *curl)
+{
+    struct _curl_private_data *data = _Curl_get_private_or_new(curl);
+    if (!data)
+        return -1;
+    *data->errorbuffer = '\0';
+    curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, data->errorbuffer);
+    return 0;
+}
+
+const char *
+_Curl_errorbuffer(CURL *curl)
+{
+    struct _curl_private_data *data = _Curl_get_private_or_new(curl);
+    if (!data)
+        return NULL;
+    return data->errorbuffer;
 }
 
 void
@@ -498,8 +520,9 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
 
     CURLcode code = curl_easy_perform(curl);
     if (code != CURLE_OK) {
+        const char *errorbuffer = _Curl_errorbuffer(curl);
         /* TODO: pass response when possible */
-        exc_set_from_CURLcode(code, args->request, Py_None);
+        exc_set_from_CURLcode(code, errorbuffer, args->request, Py_None);
         return NULL;
     }
 
@@ -561,6 +584,9 @@ CurlWrap_new(PyObject *kwargs)
     if (!curl)
         goto fail;
 
+    if (_Curl_init_errorbuffer(curl) < 0)
+        goto fail;
+
     if (_Curl_set_http_version(curl, http_version) < 0)
         goto fail;
     if (_Curl_set_maxconnects(curl, maxconnects) < 0)
@@ -569,7 +595,7 @@ CurlWrap_new(PyObject *kwargs)
     return curl;
 
 fail:
-    curl_easy_cleanup(curl);
+    CurlWrap_free(curl);
     return NULL;
 }
 

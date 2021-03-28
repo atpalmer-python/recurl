@@ -2,7 +2,7 @@
 #include "requests.h"
 
 void
-exc_set_from_CURLcode(CURLcode code, PyObject *request, PyObject *response)
+exc_set_from_CURLcode(CURLcode code, const char *errorbuffer, PyObject *request, PyObject *response)
 {
     PyObject *msg = NULL;
     PyObject *args = NULL;
@@ -38,6 +38,7 @@ exc_set_from_CURLcode(CURLcode code, PyObject *request, PyObject *response)
     if (!excobj)
         goto out;
     PyObject_SetAttrString(excobj, "curl_code", PyLong_FromLong(code));
+    PyObject_SetAttrString(excobj, "curl_errorbuffer", PyUnicode_FromString(errorbuffer));
     PyErr_SetObject(exctype, excobj);
     Py_DECREF(excobj);
 

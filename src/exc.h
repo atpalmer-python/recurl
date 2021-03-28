@@ -3,6 +3,10 @@
 
 #include <curl/curl.h>
 
-void exc_set_from_CURLcode(CURLcode code, PyObject *request, PyObject *response);
+void exc_set_from_CURLcode(
+    CURLcode code,
+    const char *errorbuffer,
+    PyObject *request,
+    PyObject *response);
 
 #endif
