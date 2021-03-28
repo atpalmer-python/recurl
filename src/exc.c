@@ -11,10 +11,13 @@ exc_set_from_CURLcode(CURLcode code, PyObject *request, PyObject *response)
 
     switch (code) {
     case CURLE_COULDNT_RESOLVE_PROXY:  /* code 5 */
-        exctype = RequestsMod_exception("ProxyError");
+        exctype = RequestsMod_exception("ProxyError");  /* extends ConnectionError */
+        break;
+    case CURLE_COULDNT_RESOLVE_HOST:  /* code 6 */
+        exctype = RequestsMod_exception("ConnectionError");  /* extends RequestException */
         break;
     default:
-        exctype = RequestsMod_exception("RequestException");
+        exctype = RequestsMod_exception("RequestException");  /* extends IOError */
         break;
     }
 

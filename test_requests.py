@@ -3,6 +3,13 @@ import requests
 import requests_curl
 
 
+def test_bad_url():
+    request = requests.PreparedRequest()
+    request.__dict__.update(method='GET', url='nowhere')
+    with pytest.raises(requests.exceptions.ConnectionError):
+        response = requests_curl.CurlEasyAdapter().send(request)
+
+
 def test_bad_http_version_value():
     with pytest.raises(ValueError):
         requests_curl.CurlEasyAdapter(http_version='abc')
