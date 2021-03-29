@@ -457,6 +457,10 @@ _header_fields_to_dict(PyObject *fieldbytes)
         }
 
         PyObject_SetItem(headerdict, key, value);
+
+        Py_DECREF(key);
+        Py_DECREF(value);
+
         start = &end[2];
     }
 
