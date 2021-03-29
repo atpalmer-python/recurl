@@ -406,17 +406,19 @@ _Curl_set_buffers(CURL *curl, PyObject **headers, PyObject **body)
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, headers);
 }
 
+static const char *const HTTP_EOL = "\r\n";
+
 static int
 _headers_split(PyObject *bytesobj, PyObject **status_line, PyObject **rest)
 {
     const char *bytes = PyBytes_AsString(bytesobj);
-    const char *eol = strstr(bytes, "\r\n");
+    const char *eol = strstr(bytes, HTTP_EOL);
     if (!eol)
         return -1;
     *status_line = PyBytes_FromStringAndSize(bytes, eol - bytes);
     if (!*status_line)
         return -1;
-    *rest = PyBytes_FromString(&eol[2]);
+    *rest = PyBytes_FromString(eol + strlen(HTTP_EOL));
     if (!*rest)
         return -1;
     return 0;
@@ -426,20 +428,17 @@ static PyObject *
 _header_fields_to_dict(PyObject *fieldbytes)
 {
     PyObject *headerdict = RequestsMod_CaseInsensitiveDict_New();
-
     const char *fieldstring = PyBytes_AsString(fieldbytes);
 
     const char *start = fieldstring;
     for (;;) {
-        /* TODO: handle continuations (lines starting with whitespace) */
         const char *sep = strchr(start, ':');
         if (!sep)
             break;
-        const char *end = strstr(sep, "\r\n");
+        const char *vstart = util_skip_linearwhitespace(&sep[1]);
+        const char *end = strstr(vstart, HTTP_EOL);
         if (!end)
             break;
-
-        const char *vstart = util_skip_linearwhitespace(&sep[1]);
 
         Py_ssize_t vlen = end - vstart;
         PyObject *value = PyUnicode_FromStringAndSize(vstart, vlen);
@@ -461,7 +460,7 @@ _header_fields_to_dict(PyObject *fieldbytes)
         Py_DECREF(key);
         Py_DECREF(value);
 
-        start = &end[2];
+        start = end + strlen(HTTP_EOL);
     }
 
     return headerdict;
