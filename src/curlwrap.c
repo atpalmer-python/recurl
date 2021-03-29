@@ -159,15 +159,18 @@ _Curl_set_headers(CURL *curl, PyObject *headersobj)
         if (!PyArg_ParseTuple(PyList_GET_ITEM(items, i), "ss", &key, &val))
             goto fail;
 
-        char tmp[4096];
-        snprintf(tmp, 4096, "%s: %s", key, val);
+        PyObject *tmp = PyBytes_FromFormat("%s: %s", key, val);
+        if (!tmp)
+            goto fail;
 
-        struct curl_slist *tmplist = curl_slist_append(headers, tmp);
+        struct curl_slist *tmplist = curl_slist_append(headers, PyBytes_AS_STRING(tmp));
         if (!tmplist) {
             PyErr_Format(PyExc_MemoryError, "libcurl could not set header: %s\n", tmp);
             goto fail;
         }
         headers = tmplist;
+
+        Py_DECREF(tmp);
     }
 
     Py_DECREF(items);
