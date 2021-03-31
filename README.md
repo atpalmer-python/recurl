@@ -44,7 +44,6 @@ print(response.ok)
 * History
 * Links
 * Hooks
-* Parse HTTP line continuations
 * Audit API vs. requests
 * Extend API for CURL-specific features?
 * CURL "multi" sessions (async requests)
