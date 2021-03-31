@@ -1,8 +1,8 @@
 import requests
-import requests_curl
+import recurl
 
 
-adapter = requests_curl.CurlEasyAdapter(http_version='1.1', maxconnects=1)
+adapter = recurl.CurlEasyAdapter(http_version='1.1', maxconnects=1)
 session = requests.Session()
 
 session.mount('https://', adapter)

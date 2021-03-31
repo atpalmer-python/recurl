@@ -2,9 +2,10 @@ from setuptools import setup, Extension
 
 
 setup(
-    name='requests-curl',
+    name='recurl',
+    install_requires=['requests'],
     ext_modules=[
-        Extension('requests_curl',
+        Extension('recurl',
             sources=[
                 'src/module.c', 'src/easyadapter.c', 'src/requests.c', 'src/util.c',
                 'src/constants.c', 'src/curlwrap.c', 'src/exc.c',

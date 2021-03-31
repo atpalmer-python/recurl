@@ -2,10 +2,10 @@
 
 ```
 import requests
-import requests_curl
+import recurl
 
 
-adapter = requests_curl.CurlEasyAdapter()
+adapter = recurl.CurlEasyAdapter()
 session = requests.Session()
 session.mount('https://', adapter)
 
@@ -17,10 +17,10 @@ print(response.ok)
 ...or...
 
 ```
-import requests_curl
+import recurl
 
 
-session = requests_curl.Session()
+session = recurl.Session()
 response = session.get('https://www.google.com/')
 print(response.ok)
 ```
@@ -28,10 +28,10 @@ print(response.ok)
 ...or...
 
 ```
-import requests_curl
+import recurl
 
 
-response = requests_curl.get('https://www.google.com/')
+response = recurl.get('https://www.google.com/')
 print(response.ok)
 ```
 

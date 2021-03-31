@@ -124,7 +124,7 @@ _free(void *self)
 
 struct PyModuleDef module_def = {
     .m_base = PyModuleDef_HEAD_INIT,
-    .m_name = "requests_curl",
+    .m_name = "recurl",
     .m_doc = "",
     .m_size = 0,
     .m_methods = methods,
@@ -132,7 +132,7 @@ struct PyModuleDef module_def = {
 };
 
 PyMODINIT_FUNC
-PyInit_requests_curl(void)
+PyInit_recurl(void)
 {
     PyObject *module = PyModule_Create(&module_def);
     if (!module)
