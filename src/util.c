@@ -60,12 +60,6 @@ util_ensure_mapping(PyObject *o, const char *name)
     return NULL;
 }
 
-PyObject *
-util_or_Py_None(PyObject *o)
-{
-    return o ? o : (Py_INCREF(Py_None), Py_None);
-}
-
 int
 util_obj_BuildAttrString(PyObject *o, const char *name, const char *fmt, ...)
 {

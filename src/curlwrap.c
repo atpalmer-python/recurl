@@ -546,7 +546,7 @@ CurlWrap_send(CURL *curl, struct CurlWrap_send_args *args)
 
     RequestsMod_ResponseArgs resp_args = {
         .status_code = _Curl_get_response_code(curl),
-        .content = util_or_Py_None(body),
+        .content = body ? body : (Py_INCREF(Py_None), Py_None),
         .url = _Curl_get_effective_url(curl),
         .request = (Py_INCREF(args->request), args->request),
         .headers = headerdict,
