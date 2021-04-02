@@ -1,5 +1,31 @@
 # Recurl: Curl adapter for requests
 
+## Usage
+
+### Simple usage:
+
+```
+import recurl
+
+
+response = recurl.get('https://www.google.com/')
+print(response)  # requests.Response object
+```
+
+### Sessions:
+
+```
+import recurl
+
+
+session = recurl.Session()  # requests.Session object with
+                            # CurlEasyAdapter already mounted
+response = session.get('https://www.google.com/')
+...
+```
+
+### Verbose setup:
+
 ```
 import requests
 import recurl
@@ -10,32 +36,10 @@ session = requests.Session()
 session.mount('https://', adapter)
 
 response = session.get('https://www.google.com/')
-
-print(response.ok)
+...
 ```
 
-...or...
-
-```
-import recurl
-
-
-session = recurl.Session()
-response = session.get('https://www.google.com/')
-print(response.ok)
-```
-
-...or...
-
-```
-import recurl
-
-
-response = recurl.get('https://www.google.com/')
-print(response.ok)
-```
-
-# TODO
+## TODO
 
 * Cookies/CookieJars
 * Exceptions
