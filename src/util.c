@@ -61,15 +61,9 @@ util_ensure_mapping(PyObject *o, const char *name)
 }
 
 PyObject *
-util_Py_None_New(void)
-{
-    Py_RETURN_NONE;
-}
-
-PyObject *
 util_or_Py_None(PyObject *o)
 {
-    return o ? o : util_Py_None_New();
+    return o ? o : (Py_INCREF(Py_None), Py_None);
 }
 
 int
