@@ -72,13 +72,6 @@ util_or_Py_None(PyObject *o)
     return o ? o : util_Py_None_New();
 }
 
-PyObject *
-util_incref(PyObject *o)
-{
-    Py_INCREF(o);
-    return o;
-}
-
 int
 util_obj_BuildAttrString(PyObject *o, const char *name, const char *fmt, ...)
 {
