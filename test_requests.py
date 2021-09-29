@@ -36,7 +36,7 @@ def test_google():
 
     response = recurl.get('https://www.google.com/', http_version='1.1')
 
-    assert response.apparent_encoding == 'ISO-8859-1'
+    assert response.apparent_encoding == 'windows-1250'
     # assert response.cookies == None  # TODO
     assert isinstance(response.elapsed, datetime.timedelta)
     assert response.encoding == 'ISO-8859-1'
